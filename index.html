@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon project for Echat</title>
+    <style>
+        @font-face {
+            font-family: echat;
+            src: url('./fonts/echat.eot');
+            /* IE9*/
+            src: url('./fonts/echat.eot#iefix') format('embedded-opentype'),
+                /* IE6-IE8 */
+                url('./fonts/echat.woff') format('woff'),
+                /* chrome, firefox */
+                url('./fonts/echat.ttf') format('truetype'),
+                /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+                url('./fonts/echat.svg#echat') format('svg');
+            /* iOS 4.1- */
+        }
+
+        #icons {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .font-icon {
+            font-family: echat;
+            font-size: 32px;
+            padding: 10px;
+            transition: all 0.2s;
+        /* }
+        .icon-pt:hover .font-icon { */
+            color: #fff;
+            font-size: 48px;
+            border-radius: 100px;
+            background-color: #aaa;
+        }
+
+        .icon-name {
+            overflow: hidden;
+        }
+        .icon-pt {
+            width: 100px;
+            min-height: 120px;
+            font-size: 12px;
+            margin-right: 20px;
+            text-align: center;
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+</head>
+
+<body>
+    <div id='icons'>
+
+    </div>
+    <div class="icon-pt">
+        <div><span class="font-icon"></span></div>
+        <span class="icon-name"></span>
+        <div><span></span>&nbsp;&nbsp;<span></span></div>
+    </div>
+    <script>
+
+        $.ajax({
+            method: 'GET',
+            url: './fonts/icons.json',
+        }).then(function (res) {
+            var frame = document.createDocumentFragment();
+            for (var i = 0; i < res.length; i++) {
+                frame.appendChild(cloneIcon(res[i].code, res[i].name));
+            }
+            document.getElementById('icons').appendChild(frame)
+        });
+
+        var iconTpl = document.getElementsByClassName('icon-pt')[0];
+        function cloneIcon(code, name) {
+            var icon = iconTpl.cloneNode(true);
+            icon.children[0].children[0].innerHTML = String.fromCharCode(`0x${code}`);
+            icon.children[1].innerHTML = name;
+            icon.children[2].children[0].innerHTML = `0x${code}`;
+            icon.children[2].children[1].innerText = `&#x${code};`;
+            return icon;
+        }
+    </script>
+</body>
+
+</html>

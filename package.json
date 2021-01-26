@@ -1,0 +1,18 @@
+{
+  "name": "icon",
+  "version": "1.0.0",
+  "description": "The project for icon",
+  "main": "svgIconBuilder.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "svg2ttf": "4.3.0",
+    "svgicons2svgfont": "9.1.1",
+    "ttf2eot": "2.0.0",
+    "ttf2woff": "2.0.1",
+    "ttf2woff2": "3.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
