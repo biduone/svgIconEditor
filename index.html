@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./editor/assets/editor.css">
+
     <title>Icon project for Echat</title>
     <style>
         @font-face {
@@ -30,26 +32,55 @@
             font-size: 32px;
             padding: 10px;
             transition: all 0.2s;
-        /* }
+            /* }
         .icon-pt:hover .font-icon { */
-            color: #fff;
+            display: inline-block;
+            color: #39ca39;
             font-size: 48px;
             border-radius: 100px;
-            background-color: #aaa;
+            background-color: #eaeaea;
         }
 
         .icon-name {
             overflow: hidden;
         }
+
+        .icon-edit {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 0;
+            cursor: pointer;
+            border-radius: 6px;
+            padding: 1px 4px 2px 4px;
+        }
+
+        .icon-edit:hover {
+            color: blue;
+            background-color: #ccc;
+            box-shadow: -1px -1px 4px 1px #ddd;
+        }
+
+
         .icon-pt {
+            position: relative;
             width: 100px;
             min-height: 120px;
             font-size: 12px;
             margin-right: 20px;
             text-align: center;
         }
+
+        .icon-pt:hover .icon-edit {
+            display: inline-block;
+        }
+
+        body>.icon-pt {
+            display: none;
+        }
     </style>
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <script src="./editor/assets/seajs.js"></script>
+    <script src="./editor/assets/magix.js"></script>
 </head>
 
 <body>
@@ -57,32 +88,134 @@
 
     </div>
     <div class="icon-pt">
-        <div><span class="font-icon"></span></div>
+        <div><span class="font-icon"></span><span class="icon-edit">编辑</span></div>
         <span class="icon-name"></span>
         <div><span></span>&nbsp;&nbsp;<span></span></div>
     </div>
-    <script>
 
-        $.ajax({
-            method: 'GET',
-            url: './fonts/icons.json',
-        }).then(function (res) {
-            var frame = document.createDocumentFragment();
-            for (var i = 0; i < res.length; i++) {
-                frame.appendChild(cloneIcon(res[i].code, res[i].name));
+    <div id="root"></div>
+    <script>
+        // seajs 的简单配置
+        seajs.config({
+            base: "/extproj/iconProject/editor",
+            alias: {
+                "$": "/extproj/iconProject/editor/assets/jquery.js",
+                "jquery": "/extproj/iconProject/editor/assets/jquery.js",
+                "magix": "assets/magix.js",
+                "pat": "assets/magix/pat",
+                "tmpl": "assets/magix/tmpl",
+
+                //"exts": "assets/magix/exts.js",
             }
-            document.getElementById('icons').appendChild(frame)
         });
 
-        var iconTpl = document.getElementsByClassName('icon-pt')[0];
-        function cloneIcon(code, name) {
-            var icon = iconTpl.cloneNode(true);
-            icon.children[0].children[0].innerHTML = String.fromCharCode(`0x${code}`);
-            icon.children[1].innerHTML = name;
-            icon.children[2].children[0].innerHTML = `0x${code}`;
-            icon.children[2].children[1].innerText = `&#x${code};`;
-            return icon;
-        }
+        define('buildIcons', [], function (require, exports, module) {
+
+            var iconTpl = document.getElementsByClassName('icon-pt')[0];
+            module.exports = function cloneIcon(res) {
+                var { code, name, fileName } = res,
+                    icon = iconTpl.cloneNode(true);
+
+                icon.children[0].children[0].innerHTML = String.fromCharCode(`0x${code}`);
+                icon.children[0].children[1].setAttribute('fn', fileName);
+                icon.children[0].children[1].addEventListener('click', function (e) {
+
+                    var fn = this.getAttribute('fn');
+
+                    $.ajax({ method: 'GET', url: `http://localhost:8089/getsvg`, data: { fn } }).then((xmlString) => {
+                        xmlString = xmlString.replace(/xmlns\=("|').+svg("|')/, '');
+
+                        var viewWidth = 1024,
+                            viewHeight = 1024,
+                            viewDims = new DOMParser().parseFromString(xmlString, 'text/xml').firstChild.getAttribute('viewBox').split(/\s|,/);
+                        try {
+
+                            if (viewDims.length == 1) {
+                                viewWidth = viewDims[0];
+                                viewHeight = viewDims[0];
+                            } else {
+                                viewWidth = viewDims[2];
+                                viewHeight = viewDims[3];
+                            }
+                        } catch (e) {
+                            console.warn(e);
+                        }
+
+                        require('assets/magix/helper').showDialog("assets/magix/edit_view", {
+                            viewOptions: {
+                                unicode: parseInt(code, 16),
+                                name,
+                                fileName,
+                                viewWidth,
+                                viewHeight,
+                                isProject: true,
+                                show_svg: xmlString
+                            },
+                            width: 910,
+                            height: 685,
+                            dockClass: "edit-dialog"
+                        })
+                    });
+
+                });
+                icon.children[1].innerHTML = name;
+                icon.children[2].children[0].innerHTML = `0x${code}`;
+                icon.children[2].children[1].innerText = `&#x${code};`;
+                return icon;
+            }
+
+            function GetDetailSvgProps(svgDom) {
+                var viewBox = svgDom.getAttribute('viewBox');
+
+            }
+
+        })
+
+        define("app/index", ["magix", "assets/magix/helper", 'tmpl'], function (i, a, e) {
+            var v = i("magix")
+                , t = v.Router
+                , n = i("assets/magix/helper");
+            e.exports = v.View.extend({
+                tmpl: '<div class="block-switch-loading" data-spm="1998910417"></div></div>',
+                ctor: function () {
+                    //this.observe(null, !0)
+                },
+                render: function () {
+
+                }
+            })
+        });
+
+
+
+        seajs.use(['magix', "jquery", "pat", "buildIcons", "tmpl"], function (Magix, jquery, pat, buildIcons) {
+
+            Magix.boot({
+                defaultPath: '/index',
+                defaultView: 'app/index',
+                rootId: 'root',
+                error: (e) => {
+                    setTimeout(() => {
+                        throw e;
+                    }, 0);
+                },
+                exts: ["assets/magix/exts"]
+            });
+
+            //debugger
+            //加载图标
+            $.ajax({
+                method: 'GET',
+                url: './fonts/icons.json',
+            }).then(function (res) {
+                var frame = document.createDocumentFragment();
+                for (var i = 0; i < res.length; i++) {
+                    frame.appendChild(buildIcons(res[i]));
+                }
+                document.getElementById('icons').appendChild(frame)
+            });
+        });
+
     </script>
 </body>
 

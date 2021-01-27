@@ -4,7 +4,7 @@ const fs = require('fs'),
     ttf2woff2 = require('ttf2woff2'),
     ttf2eot = require('ttf2eot'),
     collectionBuilder = require('./svgfile2IconCollection'),
-    supportTypes = ['ttf', /* 'eot',  'woff', 'woff2'*/],
+    supportTypes = ['ttf', 'eot',  'woff', 'woff2'],
     convertors = { ttf: (buf) => new global.Buffer(buf), eot: ttf2eot, woff: ttf2woff, woff2: ttf2woff2 },
     projects = [
         {

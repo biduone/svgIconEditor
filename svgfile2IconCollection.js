@@ -37,7 +37,7 @@ module.exports = function svgCollectionBuilder(project) {
                 } else {
                     defer.reject();
                 }
-                openIconPageToChrome();
+                //openIconPageToChrome();
             }, 300);
         });
 
@@ -52,8 +52,8 @@ module.exports = function svgCollectionBuilder(project) {
             if (!glyphMetadata) {
                 continue;
             }
-            var { nameString: name, codeString: code } = glyphMetadata;
-            icons.push({ code, name });
+            var { nameString: name, codeString: code, fileName } = glyphMetadata;
+            icons.push({ code, name, fileName });
             const glyph = fs.createReadStream(GetABSpath(`${project.svgsPath}/${svgFiles[i]}`));
             glyph.metadata = glyphMetadata;
             fontStream.write(glyph);
@@ -89,6 +89,7 @@ function GetSvgNameCode(fileName) {
     if (names.length) {
         return {
             unicode: [String.fromCharCode(`0x${names[0]}`)],
+            fileName,
             name: names.reverse().join(''),
             codeString: names[1],
             nameString: names[0],
