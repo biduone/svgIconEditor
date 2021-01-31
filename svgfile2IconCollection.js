@@ -22,7 +22,7 @@ module.exports = function svgCollectionBuilder(project) {
 
     let streamRes = false;
     // Setting the font destination
-    fontStream.pipe(fs.createWriteStream(GetABSpath(`./fonts/iconCollection-${project.name}.svg`)))
+    fontStream.pipe(fs.createWriteStream(GetABSpath(`./iconCollection-${project.name}.svg`)))
         .on('finish', function () {
             console.log(`${project.name} Font successfully created!`);
             streamRes = true;
@@ -41,7 +41,7 @@ module.exports = function svgCollectionBuilder(project) {
             }, 300);
         });
 
-    const svgFiles = fs.readdirSync(GetABSpath(project.svgsPath), { encoding: 'utf8' });
+    const svgFiles = fs.readdirSync(project.svgsPath, { encoding: 'utf8' });
 
     if (svgFiles.length) {
 
@@ -54,12 +54,12 @@ module.exports = function svgCollectionBuilder(project) {
             }
             var { nameString: name, codeString: code, fileName } = glyphMetadata;
             icons.push({ code, name, fileName });
-            const glyph = fs.createReadStream(GetABSpath(`${project.svgsPath}/${svgFiles[i]}`));
+            const glyph = fs.createReadStream(`${project.svgsPath}/${svgFiles[i]}`);
             glyph.metadata = glyphMetadata;
             fontStream.write(glyph);
 
         }
-        fs.writeFile('./fonts/icons.json', JSON.stringify(icons), () => { });
+        fs.writeFile(GetABSpath('./icons.json'), JSON.stringify(icons), () => { });
 
     } else {
         setTimeout(() => {

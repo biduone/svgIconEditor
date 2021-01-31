@@ -1,27 +1,38 @@
-const fs = require('fs'),
+let fs = require('fs'),
     svg2ttf = require('svg2ttf'),
     ttf2woff = require('ttf2woff2'),
     ttf2woff2 = require('ttf2woff2'),
     ttf2eot = require('ttf2eot'),
     collectionBuilder = require('./svgfile2IconCollection'),
-    supportTypes = ['ttf', 'eot',  'woff', 'woff2'],
-    convertors = { ttf: (buf) => new global.Buffer(buf), eot: ttf2eot, woff: ttf2woff, woff2: ttf2woff2 },
-    projects = [
-        {
-            name: 'echat',
-            svgsPath: './svgs',
-            dest: './fonts/echat'
-        }
-    ];
+    convertors = { ttf: (buf) => Buffer.from(buf), eot: ttf2eot, woff: ttf2woff, woff2: ttf2woff2 };
 
-let i = 0;
-for (; i < projects.length; i++) {
-    let pcfg = projects[i];
-    collectionBuilder(pcfg).then(() => {
-        buildFontFile(pcfg);
+/**
+ * 
+ * @param {Object} config 
+ * @param {String} config.domain 'localhost',
+ * @param {String} config.port 8089,
+ * @param {String} config.prefixPath 'svgedit',
+ * @param {String} config.svgFolder 'svgs',
+ * @param {String} config.outputFolder 'fonts',
+ * @param {String[]} config.fontTypes ['ttf', 'eot', 'woff', 'woff2']
+ */
+module.exports = function SvgIconBuilder(config) {
+    console.log(config.svgFolder, config.outputFolder)
+    var projConfig = {
+        name: 'echat',
+        svgsPath: config.svgFolder,
+        dest: config.outputFolder,
+        supportTypes: config.fontTypes
+    },
+        builderPromise = collectionBuilder(projConfig);
+
+    builderPromise.then(() => {
+        buildFontFile(projConfig);
     }, (reason) => {
         console.log(reason);
     });
+
+    return builderPromise;
 }
 
 /**
@@ -41,13 +52,13 @@ function collBuilderLooper(promise,index) {
 }
 */
 
-function buildFontFile(fontCfg) {
+function buildFontFile({ name, dest, supportTypes }) {
 
-    var ttf = svg2ttf(fs.readFileSync(GetABSpath(`./fonts/iconCollection-${fontCfg.name}.svg`), 'utf8'), {});
+    var ttf = svg2ttf(fs.readFileSync(GetABSpath(`./iconCollection-${name || 'noname'}.svg`), 'utf8'), {});
 
     for (let i = 0; i < supportTypes.length; i++) {
         if (convertors[supportTypes[i]]) {
-            fs.writeFileSync(GetABSpath(`${fontCfg.dest}.${supportTypes[i]}`), convertors[supportTypes[i]](ttf.buffer));
+            fs.writeFileSync(`${dest}/${name||'fonticon'}.${supportTypes[i]}`, convertors[supportTypes[i]](ttf.buffer));
         }
     }
 }
