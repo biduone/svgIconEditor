@@ -1,0 +1,104 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+#icons {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0 10px;
+}
+
+.font-icon {
+    font-family: echat;
+    padding: 10px;
+    transition: all 0.2s;
+    display: inline-block;
+    border-radius: 100px;
+    background-color: #eaeaea;
+}
+
+.icon-name {
+    overflow: hidden;
+}
+
+.icon-edit {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 1px 4px 2px 4px;
+}
+
+.icon-edit:hover {
+    color: blue;
+    background-color: #ccc;
+    box-shadow: -1px -1px 4px 1px #ddd;
+}
+
+.icon-pt {
+    position: relative;
+    width: 100px;
+    min-height: 120px;
+    font-size: 12px;
+    margin-right: 20px;
+    text-align: center;
+}
+
+.icon-pt:hover .icon-edit {
+    display: inline-block;
+}
+
+body>.icon-pt {
+    display: none;
+}
+
+.project-opts {
+    z-index: 10;
+    width: 100%;
+    padding: 10px 20px 20px;
+    font-size: 16px;
+    background-color: #fff;
+}
+
+.pofix {
+    top: 0;
+    position: fixed;
+    box-shadow: 0 2px 6px 0 #aaa;
+}
+
+.icon-fix {
+    padding-top: 56px!important;
+}
+
+.project-opts>* {
+    margin-right: 14px;
+}
+
+.project-opts>*::after {
+    content: '';
+    width: 1px;
+    left: 9px;
+    position: relative;
+    border-left: 2px solid #f00;
+}
+
+.project-opts>:last-child::after {
+    display: none;
+}
+
+.project-opts a {
+    color: #333333;
+}
+
+.project-opts a:hover {
+    color: #0099ff;
+    transition: all .6s;
+}
+
+.upload-ico {
+    font-size: 20px;
+    color: #0099ff;
+}

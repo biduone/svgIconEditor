@@ -21,69 +21,25 @@
                 url('./fonts/echat.svg#echat') format('svg');
             /* iOS 4.1- */
         }
-
-        #icons {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
+    </style>
+    <style id="cc-style">
+        /**图标样式控制*/
         .font-icon {
-            font-family: echat;
-            font-size: 32px;
-            padding: 10px;
-            transition: all 0.2s;
-            /* }
-        .icon-pt:hover .font-icon { */
-            display: inline-block;
             color: #39ca39;
-            font-size: 48px;
-            border-radius: 100px;
-            background-color: #eaeaea;
-        }
-
-        .icon-name {
-            overflow: hidden;
-        }
-
-        .icon-edit {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 0;
-            cursor: pointer;
-            border-radius: 6px;
-            padding: 1px 4px 2px 4px;
-        }
-
-        .icon-edit:hover {
-            color: blue;
-            background-color: #ccc;
-            box-shadow: -1px -1px 4px 1px #ddd;
-        }
-
-
-        .icon-pt {
-            position: relative;
-            width: 100px;
-            min-height: 120px;
-            font-size: 12px;
-            margin-right: 20px;
-            text-align: center;
-        }
-
-        .icon-pt:hover .icon-edit {
-            display: inline-block;
-        }
-
-        body>.icon-pt {
-            display: none;
         }
     </style>
     <script src="./editor/assets/seajs.js"></script>
     <script src="./editor/assets/magix.js"></script>
+    <script src="./js/ui.js"></script>
+    <link rel="stylesheet" href="./css/ui.css" type="text/css" />
 </head>
 
 <body>
+    <div class="project-opts">
+        <a id="icon_up" href="javascript:;">上传图标<span class="upload-ico">₪</span></a>
+        <span>图标颜色：<input type="color" id="icon_color" value="#39ca39" /></span>
+        <span>图标大小：<input type="number" id="icon_size" value="42" style="width: 34px;" /></span>
+    </div>
     <div id='icons'>
 
     </div>
@@ -206,7 +162,7 @@
             //加载图标
             $.ajax({
                 method: 'GET',
-                url: './fonts/icons.json',
+                url: './icons.json',
             }).then(function (res) {
                 var frame = document.createDocumentFragment();
                 for (var i = 0; i < res.length; i++) {
