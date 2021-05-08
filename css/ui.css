@@ -55,12 +55,45 @@ body>.icon-pt {
     display: none;
 }
 
-.project-opts {
+.nav-header {
     z-index: 10;
     width: 100%;
-    padding: 10px 20px 20px;
-    font-size: 16px;
+    line-height: 60px;
     background-color: #fff;
+}
+
+.nav-header>* {
+    padding: 16px 20px 0 20px;
+}
+
+.project-opts {
+    font-size: 16px;
+    padding-bottom: 4px;
+    line-height: normal;
+}
+
+.ext-opts {
+    display: flex;
+    flex-direction: row;
+    padding-top: 4px;
+}
+
+.opt-icons {
+    display: flex;
+    overflow-x: auto;
+    flex-direction: row;
+}
+
+.opt-icons:not(:empty) {
+    padding-bottom: 16px;
+}
+
+.opt-icons:empty {
+    padding-top: 16px;
+}
+
+.opt-icons:empty+div {
+    display: none;
 }
 
 .pofix {
@@ -101,4 +134,25 @@ body>.icon-pt {
 .upload-ico {
     font-size: 20px;
     color: #0099ff;
+}
+
+#icon-up {
+    position: relative;
+}
+
+.upload-input {
+    position: absolute;
+    width: 100%;
+    opacity: 0.01;
+    z-index: 10;
+    left: 0;
+}
+
+.upload-svg {
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    line-height: 60px;
+    margin-right: 10px;
+    border: 1px solid #aaa;
 }
