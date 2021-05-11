@@ -12,10 +12,17 @@ exports.querySingleIcon = async function (fontId, db) {
     return promise;
 }
 
-exports.queryIconsInfo = async function (projectId = 1, db) {
+exports.queryIconsInfo = function (projectId = 1, db) {
 
     let { callback, promise } = DBPromise();
     (db || dbInstance).all(`select id, code, name from ${tableName} where projectId=?`, [projectId], callback);
+    return promise;
+}
+
+exports.queryAllSvgInfo = function (projectId = 1, db) {
+
+    let { callback, promise } = DBPromise();
+    (db || dbInstance).all(`select id, code, name, svg from ${tableName} where projectId=?`, [projectId], callback);
     return promise;
 }
 /** 添加svg */

@@ -4,6 +4,7 @@
 const fs = require('fs'),
     OS = require('os'),
     CP = require('child_process'),
+    { Readable } = require('stream'),
     SVGIcons2SVGFontStream = require('svgicons2svgfont');
 /**
  * @param {Object} project 配置参数
@@ -21,27 +22,29 @@ module.exports = function svgCollectionBuilder(project) {
             fontHeight: 1024,
         });
 
-    let streamRes = false;
     // Setting the font destination
-    fontStream.pipe(fs.createWriteStream(GetABSpath(`./iconCollection-${project.name}.svg`)))
-        .on('finish', function () {
-            console.log(`${project.name} Font successfully created!`);
-            streamRes = true;
-        })
-        .on('error', function (err) {
-            console.log(err);
+    let streamRes = false,
+        iconsSvg = [];
+    //fontStream.pipe(fs.createWriteStream(GetABSpath(`./iconCollection-${project.name}.svg`)))
+    fontStream.on('finish', function () {
+        console.log(`${project.name} Font successfully created!`);
+        streamRes = true;
+    }).on('error', function (err) {
+        console.log(err);
+    }).on('data', function (chunk, a, c) {
+        const glyph = chunk.toString();
+        iconsSvg.push(glyph)
 
-        }).on('close', () => {
-            setTimeout(() => {
-                if (streamRes) {
-                    defer.resolve();
-                } else {
-                    defer.reject();
-                }
-                //openIconPageToChrome();
-            }, 300);
-        });
-
+    }).on('close', (cc) => {
+        setTimeout(function () {
+            if (streamRes) {
+                defer.resolve(fontStream);
+            } else {
+                defer.reject();
+            }
+            //openIconPageToChrome();
+        }, 300);
+    });
 
     var svgs = project.svgs;
     if (svgs.length) {
@@ -52,14 +55,15 @@ module.exports = function svgCollectionBuilder(project) {
             // Writing glyphs
             glyphMetadata = {
                 unicode: [String.fromCharCode(`0x${svg.code}`)],
-                name: svg.name,
+                name: `${svg.code}_${svg.name}`,
                 code: svg.code,
             };
             if (!svg.code) {
                 continue;
             }
 
-            const glyph = fs.createReadStream(Buffer.from(svgs[0].svg, "utf-8"));
+            const glyph = Readable.from(Buffer.from(svg.svg, "utf-8").toString());
+            //fs.createReadStream(Buffer.from(svg.svg, "utf-8"));
             glyph.metadata = glyphMetadata;
             fontStream.write(glyph);
 
@@ -70,10 +74,17 @@ module.exports = function svgCollectionBuilder(project) {
             defer.reject(`No svg file in directory :=> ${project.svgsPath}`);
         }, 400);
     }
-
     // Do not forget to end the stream
-    fontStream.end(() => {
+    fontStream.end(function (a, b, c) {
         console.log(...arguments);
+        setTimeout(function () {
+            if (streamRes) {
+                defer.resolve(iconsSvg);
+            } else {
+                defer.reject();
+            }
+            //openIconPageToChrome();
+        }, 300);
     });
     return defer.promise;
 };

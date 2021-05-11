@@ -26,8 +26,9 @@ module.exports = function SvgIconBuilder(config) {
     },
         builderPromise = collectionBuilder(projConfig);
 
-    builderPromise.then(() => {
-        buildFontFile(projConfig);
+    builderPromise.then((fontStream) => {
+        debugger
+        buildFontFile(projConfig, fontStream);
     }, (reason) => {
         console.log(reason);
     });
@@ -52,9 +53,9 @@ function collBuilderLooper(promise,index) {
 }
 */
 
-function buildFontFile({ name, dest, supportTypes }) {
+function buildFontFile({ name, dest, supportTypes }, fonts) {
 
-    var ttf = svg2ttf(fs.readFileSync(GetABSpath(`./iconCollection-${name || 'noname'}.svg`), 'utf8'), {});
+    var ttf = svg2ttf(fonts.join(''), {});
 
     for (let i = 0; i < supportTypes.length; i++) {
         if (convertors[supportTypes[i]]) {
