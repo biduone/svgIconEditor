@@ -8,12 +8,13 @@ const fs = require('fs'),
 /**
  * @param {Object} project 配置参数
  * @param {String} project.name 字体图标的，字体名
- * @param {String} project.svgsPath svg字体图标所在目录
+ * @param {Object} project.svgs svg字体图集合
+ * @param {String} project.svgs.code svg字体图集合
+ * @param {String} project.svgs.svg svg字体图集合
  */
 module.exports = function svgCollectionBuilder(project) {
 
     const defer = Defer(),
-        icons = [],
         fontStream = new SVGIcons2SVGFontStream({
             fontName: project.name,
             normalize: true,
@@ -41,25 +42,28 @@ module.exports = function svgCollectionBuilder(project) {
             }, 300);
         });
 
-    const svgFiles = fs.readdirSync(project.svgsPath, { encoding: 'utf8' });
 
-    if (svgFiles.length) {
+    var svgs = project.svgs;
+    if (svgs.length) {
 
         let glyphMetadata;
-        for (let i = 0, len = svgFiles.length; i < len; i++) {
+        for (let i = 0, len = svgs.length; i < len; i++) {
+            let svg = svgs[i];
             // Writing glyphs
-            glyphMetadata = GetSvgNameCode(svgFiles[i]);
-            if (!glyphMetadata) {
+            glyphMetadata = {
+                unicode: [String.fromCharCode(`0x${svg.code}`)],
+                name: svg.name,
+                code: svg.code,
+            };
+            if (!svg.code) {
                 continue;
             }
-            var { nameString: name, codeString: code, fileName } = glyphMetadata;
-            icons.push({ code, name, fileName });
-            const glyph = fs.createReadStream(`${project.svgsPath}/${svgFiles[i]}`);
+
+            const glyph = fs.createReadStream(Buffer.from(svgs[0].svg, "utf-8"));
             glyph.metadata = glyphMetadata;
             fontStream.write(glyph);
 
         }
-        fs.writeFile(GetABSpath('./icons.json'), JSON.stringify(icons), () => { });
 
     } else {
         setTimeout(() => {
@@ -73,30 +77,6 @@ module.exports = function svgCollectionBuilder(project) {
     });
     return defer.promise;
 };
-
-function GetSvgNameCode(fileName) {
-
-    let names = fileName.split('.');
-
-    if (names[names.length - 1] !== 'svg') {
-        return null;
-    } else {
-        names = names[0];
-    }
-
-    names = names.split('$$');
-
-    if (names.length) {
-        return {
-            unicode: [String.fromCharCode(`0x${names[0]}`)],
-            fileName,
-            name: names.reverse().join(''),
-            codeString: names[1],
-            nameString: names[0],
-        };
-    }
-    return null;
-}
 
 function GetABSpath(path) {
     return [__dirname, path].join('/');

@@ -77,11 +77,11 @@
 
             var iconTpl = document.getElementsByClassName('icon-pt')[0];
             module.exports = function cloneIcon(res) {
-                var { code, name, fileName } = res,
+                var { code, name, id } = res,
                     icon = iconTpl.cloneNode(true);
 
                 icon.children[0].children[0].innerHTML = String.fromCharCode(`0x${code}`);
-                icon.children[0].children[1].setAttribute('fn', fileName);
+                icon.children[0].children[1].setAttribute('fn', id);
                 /** 编辑*/
                 icon.children[0].children[1].addEventListener('click', function (e) {
 
@@ -110,7 +110,7 @@
                             viewOptions: {
                                 unicode: parseInt(code, 16),
                                 name,
-                                fileName,
+                                id,
                                 viewWidth,
                                 viewHeight,
                                 isProject: true,
@@ -170,8 +170,7 @@
             //debugger
             //加载图标
             $.ajax({
-                method: 'GET',
-                url: './icons.json',
+                url: '/svg/icons',
             }).then(function (res) {
                 var frame = document.createDocumentFragment();
                 for (var i = 0; i < res.length; i++) {

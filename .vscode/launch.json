@@ -12,6 +12,15 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/server/index.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Icon Svg pick",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/server/putSvgToSqlite.js"
         }
     ]
 }

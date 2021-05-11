@@ -12,7 +12,7 @@ let fs = require('fs'),
  * @param {String} config.domain 'localhost',
  * @param {String} config.port 8089,
  * @param {String} config.prefixPath 'svgedit',
- * @param {String} config.svgFolder 'svgs',
+ * @param {Object[]]} config.svgs 'svgs',
  * @param {String} config.outputFolder 'fonts',
  * @param {String[]} config.fontTypes ['ttf', 'eot', 'woff', 'woff2']
  */
@@ -20,7 +20,7 @@ module.exports = function SvgIconBuilder(config) {
     console.log(config.svgFolder, config.outputFolder)
     var projConfig = {
         name: 'echat',
-        svgsPath: config.svgFolder,
+        svgs: config.svgs,
         dest: config.outputFolder,
         supportTypes: config.fontTypes
     },
@@ -58,7 +58,7 @@ function buildFontFile({ name, dest, supportTypes }) {
 
     for (let i = 0; i < supportTypes.length; i++) {
         if (convertors[supportTypes[i]]) {
-            fs.writeFileSync(`${dest}/${name||'fonticon'}.${supportTypes[i]}`, convertors[supportTypes[i]](ttf.buffer));
+            fs.writeFileSync(`${dest}/${name || 'fonticon'}.${supportTypes[i]}`, convertors[supportTypes[i]](ttf.buffer));
         }
     }
 }

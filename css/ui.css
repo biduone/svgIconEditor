@@ -11,11 +11,10 @@ body {
 
 .font-icon {
     font-family: echat;
-    padding: 10px;
     transition: all 0.2s;
     display: inline-block;
-    border-radius: 100px;
-    background-color: #eaeaea;
+    border: 2px dashed #ddd;
+    box-sizing: content-box;
 }
 
 .icon-name {
@@ -34,8 +33,7 @@ body {
 
 .icon-edit:hover {
     color: blue;
-    background-color: #ccc;
-    box-shadow: -1px -1px 4px 1px #ddd;
+    box-shadow: 0px 1px 4px 1px #ddd;
 }
 
 .icon-pt {

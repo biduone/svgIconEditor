@@ -4,6 +4,7 @@ var { urlencoded } = require('body-parser');
 var http = Express();
 var fs = require('fs');
 const builder = require('../svgIconBuilder');
+const sqliteDB = require('./sqliteDB');
 
 const SERVER_PORT = "8089";
 
@@ -11,18 +12,26 @@ http.use(urlencoded({
     extended: true
 }));
 
-http.all("/svg/get", function (req, resp, params) {
-    var fn = req.query['fn'];
-    if (!fn) {
+http.get("/svg/icons", async function (req, resp) {
+
+    const { err, rows } = await sqliteDB.queryIconsInfo();
+
+    resp.setHeader("content-type", "application/json; charset=UTF-8");
+    respone(resp, JSON.stringify(rows));
+});
+
+http.all("/svg/get", async function (req, resp) {
+    var fontId = req.query['fn'];
+    if (!fontId) {
         return respone(resp, '');
     }
-    svgFile = fs.readFileSync(GetSvgFolder(fn), { encoding: 'utf-8' });
+    const { rows } = await sqliteDB.querySingleIcon(fontId);
 
-    respone(resp, svgFile);
+    respone(resp, rows[0].svg);
 
 });
 
-http.post("/svg/save", function (req, resp, params) {
+http.post("/svg/save", async function (req, resp) {
     var body = req.body,
         fn = body['fn'],
         fileString = body['svgFile'];
@@ -33,7 +42,7 @@ http.post("/svg/save", function (req, resp, params) {
         return respone(resp, respRes(false));
     }
 
-    fs.writeFileSync(GetSvgFolder(fn), fileString, { encoding: 'utf-8' });
+    await sqliteDB.updateSvg(fn, fileString);
 
     builder({
         svgFolder: `${__dirname}/../svgs`,
@@ -48,7 +57,8 @@ http.post("/svg/save", function (req, resp, params) {
 });
 
 http.post("/svg/upload", function (req, resp) {
-    debugger
+    const { body = {} } = req;
+
 })
 
 function respRes(bool) {
@@ -57,6 +67,12 @@ function respRes(bool) {
 function respone(resp, res, code = 200,) {
     resp.writeHead(code).end(res);
 }
+
+(async function () {
+    const dbInstance = await sqliteDB.initIconsDB();
+    const creRes = await sqliteDB.createIconTables(dbInstance);
+
+})();
 
 http.listen(SERVER_PORT, () => {
     console.log(`Server listening at http://localhost:${SERVER_PORT}`)
