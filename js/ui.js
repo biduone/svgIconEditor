@@ -68,26 +68,24 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
                 if (willUploads.length < 8) {
                     exts.innerHTML += "<div class='upload-svg'>" + evt.target.result + "</div>";
-                    willUploads.push({ name: file.name, text: evt.target.result });
+                    willUploads.push({ name: file.name, svg: evt.target.result });
                 }
             }
             FR.readAsText(file, 'utf-8');
         }
     });
+
     $$('#upload-cancel')[0].addEventListener('click', function () {
         willUploads = [];
         exts.innerHTML = '';
     });
+
     $$('#upload-btn')[0].addEventListener('click', function () {
-        var fileMap = willUploads.reduce(function (prevs, item) {
-            prevs[item.name] = item.text;
-            return prevs;
-        }, {});
 
         $.ajax({
             url: '/svg/upload',
             method: 'post',
-            data: fileMap
+            data: { icons: willUploads }
         })
     });
 });

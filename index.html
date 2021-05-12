@@ -12,8 +12,7 @@
             font-family: echat;
             src: url('./fonts/echat.eot');
             /* IE9*/
-            src: url('./fonts/echat.eot#iefix') format('embedded-opentype'),
-                /* IE6-IE8 */
+            src: url('./fonts/echat.woff2') format('woff2'),
                 url('./fonts/echat.woff') format('woff'),
                 /* chrome, firefox */
                 url('./fonts/echat.ttf') format('truetype'),
@@ -52,9 +51,12 @@
 
     </div>
     <div class="icon-pt">
-        <div><span class="font-icon"></span><span class="icon-edit">编辑</span></div>
-        <span class="icon-name"></span>
-        <div><span></span>&nbsp;&nbsp;<span></span></div>
+        <div><span class="font-icon"></span></div>
+        <div class="icon-info">
+            <span class="icon-name"></span>
+            <div><span class="icon-code"></span>&nbsp;&nbsp;<span class="icon-html"></span></div>
+            <div class="icon-edit-btns"><span class="icon-edit">编辑</span></div>
+        </div>
     </div>
 
     <div id="root"></div>
@@ -80,10 +82,15 @@
                 var { code, name, id } = res,
                     icon = iconTpl.cloneNode(true);
 
-                icon.children[0].children[0].innerHTML = String.fromCharCode(`0x${code}`);
-                icon.children[0].children[1].setAttribute('fn', id);
-                /** 编辑*/
-                icon.children[0].children[1].addEventListener('click', function (e) {
+                icon.querySelector('.font-icon').innerHTML = String.fromCharCode(`0x${code}`);
+                icon.querySelector('.icon-name').innerHTML = name;
+                icon.querySelector('.icon-code').innerHTML = `0x${code}`;
+                icon.querySelector('.icon-html').innerText = `&#x${code};`;
+
+                /** 编辑 */
+                var editBtn = icon.querySelector('.icon-edit');
+                editBtn.setAttribute('fn', id);
+                editBtn.addEventListener('click', function (e) {
 
                     var fn = this.getAttribute('fn');
 
@@ -123,9 +130,7 @@
                     });
 
                 });
-                icon.children[1].innerHTML = name;
-                icon.children[2].children[0].innerHTML = `0x${code}`;
-                icon.children[2].children[1].innerText = `&#x${code};`;
+
                 return icon;
             }
 
@@ -167,12 +172,16 @@
                 exts: ["assets/magix/exts"]
             });
 
-            //debugger
             //加载图标
             $.ajax({
                 url: '/svg/icons',
             }).then(function (res) {
+
                 var frame = document.createDocumentFragment();
+                res.sort((a, b) => {//将图标以code大小顺序排序一下
+                    return a.code.localeCompare(b.code) > 0 ? 1 : -1
+                });
+
                 for (var i = 0; i < res.length; i++) {
                     frame.appendChild(buildIcons(res[i]));
                 }

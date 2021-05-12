@@ -16,42 +16,20 @@ let fs = require('fs'),
  * @param {String} config.outputFolder 'fonts',
  * @param {String[]} config.fontTypes ['ttf', 'eot', 'woff', 'woff2']
  */
-module.exports = function SvgIconBuilder(config) {
-    console.log(config.svgFolder, config.outputFolder)
+module.exports = async function SvgIconBuilder(config) {
+    console.log(config.outputFolder, config.fontTypes)
     var projConfig = {
         name: 'echat',
         svgs: config.svgs,
         dest: config.outputFolder,
         supportTypes: config.fontTypes
     },
-        builderPromise = collectionBuilder(projConfig);
+        fontStream = await collectionBuilder(projConfig);
 
-    builderPromise.then((fontStream) => {
-        debugger
-        buildFontFile(projConfig, fontStream);
-    }, (reason) => {
-        console.log(reason);
-    });
+    return buildFontFile(projConfig, fontStream);
 
-    return builderPromise;
+
 }
-
-/**
- * @param {promise} promise
- 
-function collBuilderLooper(promise,index) {
-    promise.then(() => {
-        console.log('succ');
-        buildFontFile(projects[currentProjIndex]);
-        currentProjIndex++;
-        collBuilderLooper(collectionBuilder(projects[currentProjIndex]));
-    }, (reason) => {
-        console.error(reason);
-        currentProjIndex++;
-        collBuilderLooper(collectionBuilder(projects[currentProjIndex]));
-    });
-}
-*/
 
 function buildFontFile({ name, dest, supportTypes }, fonts) {
 
@@ -62,9 +40,6 @@ function buildFontFile({ name, dest, supportTypes }, fonts) {
             fs.writeFileSync(`${dest}/${name || 'fonticon'}.${supportTypes[i]}`, convertors[supportTypes[i]](ttf.buffer));
         }
     }
-}
 
-
-function GetABSpath(path) {
-    return [__dirname, path].join('/');
+    return true;
 }

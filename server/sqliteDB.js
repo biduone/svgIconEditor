@@ -25,12 +25,17 @@ exports.queryAllSvgInfo = function (projectId = 1, db) {
     (db || dbInstance).all(`select id, code, name, svg from ${tableName} where projectId=?`, [projectId], callback);
     return promise;
 }
-/** 添加svg */
+/** 添加svg
+ * @param {Object} svg
+ * @param {string} svg.name
+ * @param {string} svg.code
+ * @param {string} svg.svg
+ */
 exports.addSvg = function (svg, db) {
 
     let { callback, promise } = DBPromise();
     (db || dbInstance).run(`insert into ${tableName} (projectId,name,code,svg,updatetime) values(?,?,?,?,?)`,
-        [svg.projectId || 0, svg.name, svg.code, svg.content, Date.now()], callback);
+        [svg.projectId || 0, svg.name, svg.code, svg.svg, Date.now()], callback);
 
     return promise;
 }

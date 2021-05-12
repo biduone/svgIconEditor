@@ -9,7 +9,7 @@ const fs = require('fs'),
 /**
  * @param {Object} project 配置参数
  * @param {String} project.name 字体图标的，字体名
- * @param {Object} project.svgs svg字体图集合
+ * @param {Object[]} project.svgs svg字体图集合
  * @param {String} project.svgs.code svg字体图集合
  * @param {String} project.svgs.svg svg字体图集合
  */
@@ -34,7 +34,6 @@ module.exports = function svgCollectionBuilder(project) {
     }).on('data', function (chunk, a, c) {
         const glyph = chunk.toString();
         iconsSvg.push(glyph)
-
     }).on('close', (cc) => {
         setTimeout(function () {
             if (streamRes) {
@@ -66,7 +65,6 @@ module.exports = function svgCollectionBuilder(project) {
             //fs.createReadStream(Buffer.from(svg.svg, "utf-8"));
             glyph.metadata = glyphMetadata;
             fontStream.write(glyph);
-
         }
 
     } else {
@@ -76,7 +74,7 @@ module.exports = function svgCollectionBuilder(project) {
     }
     // Do not forget to end the stream
     fontStream.end(function (a, b, c) {
-        console.log(...arguments);
+        console.log(Date.now(), "Collection created")
         setTimeout(function () {
             if (streamRes) {
                 defer.resolve(iconsSvg);

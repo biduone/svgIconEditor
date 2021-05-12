@@ -10,7 +10,7 @@ for (let i = 0, len = files.length; i < len; i++) {
     const cnt = FS.readFileSync(`./svgs/${files[i]}`, { encoding: 'utf-8' }) || '';
     if (cnt.startsWith('<svg')) {
         const ns = files[i].split('$$');
-        svgs.push({ projectId: 1, code: ns[0], name: ns[1].replace(/\.svg/i, ''), content: cnt })
+        svgs.push({ projectId: 1, code: ns[0], name: ns[1].replace(/\.svg/i, ''), svg: cnt })
     } else {
         console.log(files[i])
     }

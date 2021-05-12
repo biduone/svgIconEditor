@@ -17,15 +17,27 @@ body {
     box-sizing: content-box;
 }
 
+.icon-info {
+    position: relative;
+}
+
 .icon-name {
     overflow: hidden;
 }
 
-.icon-edit {
+.icon-edit-btns {
     display: none;
     position: absolute;
     right: 0;
     top: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: flex-end;
+    background-color: rgb(255, 255, 255, .93);
+}
+
+.icon-edit {
     cursor: pointer;
     border-radius: 6px;
     padding: 1px 4px 2px 4px;
@@ -45,8 +57,8 @@ body {
     text-align: center;
 }
 
-.icon-pt:hover .icon-edit {
-    display: inline-block;
+.icon-pt:hover .icon-edit-btns {
+    display: flex;
 }
 
 body>.icon-pt {
@@ -153,4 +165,9 @@ body>.icon-pt {
     line-height: 60px;
     margin-right: 10px;
     border: 1px solid #aaa;
+}
+
+.upload-svg svg {
+    width: 60px;
+    height: 60px;
 }

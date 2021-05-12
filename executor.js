@@ -1,6 +1,5 @@
 const builder = require('./svgIconBuilder');
 const sqliteDb = require('./server/sqliteDB');
-const fs = require('fs');
 
 (async function () {
     await sqliteDb.initIconsDB();
