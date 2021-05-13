@@ -1,19 +1,58 @@
 
 var Express = require('express');
 var { urlencoded } = require('body-parser');
-var http = Express();
-var fs = require('fs');
+var cookieParser = require('cookie-parser')
+
 const builder = require('../svgIconBuilder');
 const sqliteDB = require('./sqliteDB');
+const accouts = require('./verifycode.json')
 
 const SERVER_PORT = "8089",
-    START_INDEX = 65535;
+    START_INDEX = 65535,
+    SERVER_PREFIX = "",
+    VERIFY_COOKIE = "logcc";
 
+var loginSessions = {};
+var http = Express();
 http.use(urlencoded({
     extended: true
 }));
+http.use(cookieParser());
+//登录拦截
+http.use(function (req, resp, next) {
+
+    const { cookies } = req,
+        verifyCode = decodeVC(cookies[VERIFY_COOKIE] || '');
+    //跳过登录请求
+    if (decideUrl("/svg/login") === req.url || accouts[verifyCode]) {
+        if (accouts[verifyCode]) {
+            //更新登录时间
+            loginSessions[verifyCode] = Date.now();
+        }
+        next();
+    } else {//没有登录的返回401
+        respone(resp, '', 401);
+        //throw "Not logged in";
+    }
+});
+
+/**添加项目列表 */
+http.post(decideUrl("/svg/login"), async function (req, resp) {
+    resp.setHeader("content-type", "application/json; charset=UTF-8");
+
+    var { body } = req;
+
+    if (body.verifycode && accouts[body.verifycode]) {
+        resp.cookie(VERIFY_COOKIE, encodeVC(body.verifycode));
+        respone(resp, respRes(true));
+    } else {
+        respone(resp, respRes(false));
+    }
+
+});
+
 /**查询项目列表 */
-http.get("/svg/proj", async function (req, resp) {
+http.get(decideUrl("/svg/proj"), async function (req, resp) {
 
     const { err, rows } = await sqliteDB.queryProjects();
 
@@ -21,7 +60,7 @@ http.get("/svg/proj", async function (req, resp) {
     respone(resp, JSON.stringify(rows));
 });
 /**添加项目列表 */
-http.post("/svg/addProj", async function (req, resp) {
+http.post(decideUrl("/svg/addProj"), async function (req, resp) {
 
     const { body } = req;
     if (!body.name) {
@@ -34,7 +73,7 @@ http.post("/svg/addProj", async function (req, resp) {
 });
 
 
-http.post("/svg/icons", async function (req, resp) {
+http.post(decideUrl("/svg/icons"), async function (req, resp) {
 
     const { body } = req;
     const { err, rows } = await sqliteDB.queryIconsInfo(body.pid);
@@ -43,7 +82,7 @@ http.post("/svg/icons", async function (req, resp) {
     respone(resp, JSON.stringify(rows));
 });
 
-http.all("/svg/get", async function (req, resp) {
+http.get(decideUrl("/svg/get"), async function (req, resp) {
     var fontId = req.query['fn'];
     if (!fontId) {
         return respone(resp, '');
@@ -55,7 +94,7 @@ http.all("/svg/get", async function (req, resp) {
 
 });
 
-http.post("/svg/save", async function (req, resp) {
+http.post(decideUrl("/svg/save"), async function (req, resp) {
     var { body } = req,
         fn = body['fn'],
         pid = body.pid,
@@ -86,7 +125,7 @@ http.post("/svg/save", async function (req, resp) {
 
 });
 
-http.post("/svg/upload", async function (req, resp) {
+http.post(decideUrl("/svg/upload"), async function (req, resp) {
     const { body: { icons, pid } = {} } = req;
     const { rows } = await sqliteDB.queryAllSvgInfo();
 
@@ -131,4 +170,38 @@ function respRes(bool) {
 }
 function respone(resp, res, code = 200,) {
     resp.writeHead(code).end(res);
+}
+
+function decideUrl(serverUrl) {
+    return `${SERVER_PREFIX}${serverUrl}`;
+}
+
+var replaceWord = { 'Y': 'm', '=': "J", 'Z': "_" };
+function encodeVC(code = "") {
+
+    code = btoa(code || "");
+    for (let k in replaceWord) {
+        code = code.replace(k, replaceWord[k]);
+    }
+    return code;
+}
+
+function decodeVC(code) {
+    code = code || "";
+    for (let k in replaceWord) {
+        code = code.replace(replaceWord[k], k);
+    }
+    return atob(code);
+}
+
+if (typeof btoa === 'undefined') {
+    global.btoa = function (str) {
+        return Buffer.from(str, 'utf-8').toString('base64');
+    };
+}
+
+if (typeof atob === 'undefined') {
+    global.atob = function (b64Encoded) {
+        return Buffer.from(b64Encoded, 'base64').toString();
+    };
 }

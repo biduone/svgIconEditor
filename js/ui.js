@@ -103,6 +103,22 @@ define('buildIcons', [], function (require, exports, module) {
 });
 
 seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
+
+    $.ajaxSetup({
+        complete: function (xhr, a, b, c) {
+
+            if (xhr.status == 401) {
+                logins.innerHTML = '<input name="verifycode" placeholder="登录码"/><button>登录</button>';
+            } else if (xhr.status == 200) {
+                logins.innerHTML = "🥳";
+            }
+        }
+    });
+
+    $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+        options.url = "" + options.url;
+    })
+
     var $$ = function (selector) { return document.querySelectorAll(selector) }
     //滚动时固定头部
     var headerNav = $$('.nav-header')[0];
@@ -116,6 +132,22 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
             headerNav.classList.remove('pofix')
             icons.classList.remove('icon-fix')
         }
+    });
+
+    //登录验证
+    var loginForm = $$('#logins')[0];
+    loginForm.addEventListener('submit', function (evt) {
+        $.ajax({
+            url: '/svg/login',
+            method: 'post',
+            data: { verifycode: this[0].value }
+        }).then(function (res) {
+            if (res.succ) {
+                location.reload();
+                loginForm.innerHTML = "🥳";
+            }
+        })
+        evt.preventDefault();
     });
     //添加项目
     var addProjBtn = $$("#add-proj")[0],

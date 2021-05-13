@@ -77,6 +77,7 @@ body>.icon-pt {
 }
 
 .project-opts {
+    position: relative;
     font-size: 16px;
     padding-bottom: 4px;
     line-height: normal;
@@ -147,6 +148,10 @@ body>.icon-pt {
     display: none;
 }
 
+.project-opts>:nth-last-child(2)::after {
+    display: none;
+}
+
 .project-opts a {
     color: #333333;
 }
@@ -213,4 +218,13 @@ body>.icon-pt {
     padding: 4px 10px 5px 10px;
     border: none;
     height: 26px;
+}
+
+#logins {
+    position: absolute;
+    border: 1px solid #ddd;
+    padding: 2px 10px;
+    border-radius: 6px;
+    right: 0;
+    top: 20px;
 }
