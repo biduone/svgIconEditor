@@ -36,6 +36,7 @@
 <body>
     <div class="nav-header">
         <div class="project-opts">
+            <span>项目<select id="projects"></select><span id="add-proj" title="添加">＋✚</span></span>
             <a id="icon-up" href="javascript:;">上传图标<span class="upload-ico">₪</span>
                 <input type="file" id="uploadinput" multiple="" accept="image/svg+xml" class="upload-input" />
             </a>
@@ -43,8 +44,16 @@
             <span>图标大小：<input type="number" id="icon_size" value="42" style="width: 34px;" /></span>
         </div>
         <div class="ext-opts">
-            <div class="opt-icons" id="ext-icons"></div>
-            <div><button id="upload-btn">上传</button><button id="upload-cancel">取消</button></div>
+            <form id="add-proj-opt">
+                <input type="text" name="name" placeholder="项目名称" /><input type="text" name="fontname"
+                    placeholder="字体文件名称(字母、数字组合)" />
+                <textarea name="desc" placeholder="项目描述"></textarea>
+                <button>提交</button><button id="cancel-add-proj">取消</button>
+            </form>
+            <div id="upload-svg-opt">
+                <div class="opt-icons" id="ext-icons"></div>
+                <div><button id="upload-btn">上传</button><button id="upload-cancel">取消</button></div>
+            </div>
         </div>
     </div>
     <div id='icons'>
@@ -61,86 +70,6 @@
 
     <div id="root"></div>
     <script>
-        // seajs 的简单配置
-        seajs.config({
-            base: "./editor",
-            alias: {
-                "$": "assets/jquery.js",
-                "jquery": "assets/jquery.js",
-                "magix": "assets/magix.js",
-                "pat": "assets/magix/pat",
-                "tmpl": "assets/magix/tmpl",
-
-                //"exts": "assets/magix/exts.js",
-            }
-        });
-
-        define('buildIcons', [], function (require, exports, module) {
-
-            var iconTpl = document.getElementsByClassName('icon-pt')[0];
-            module.exports = function cloneIcon(res) {
-                var { code, name, id } = res,
-                    icon = iconTpl.cloneNode(true);
-
-                icon.querySelector('.font-icon').innerHTML = String.fromCharCode(`0x${code}`);
-                icon.querySelector('.icon-name').innerHTML = name;
-                icon.querySelector('.icon-code').innerHTML = `0x${code}`;
-                icon.querySelector('.icon-html').innerText = `&#x${code};`;
-
-                /** 编辑 */
-                var editBtn = icon.querySelector('.icon-edit');
-                editBtn.setAttribute('fn', id);
-                editBtn.addEventListener('click', function (e) {
-
-                    var fn = this.getAttribute('fn');
-
-                    $.ajax({ method: 'GET', url: `/svg/get`, data: { fn } }).then((xmlString) => {
-                        xmlString = xmlString.replace(/xmlns\=("|').+svg("|')/, '');
-
-                        var viewWidth = 1024,
-                            viewHeight = 1024,
-                            viewDims = new DOMParser().parseFromString(xmlString, 'text/xml').firstElementChild.getAttribute('viewBox').split(/\s|,/);
-                        try {
-
-                            if (viewDims.length == 1) {
-                                viewWidth = viewDims[0];
-                                viewHeight = viewDims[0];
-                            } else {
-                                viewWidth = viewDims[2];
-                                viewHeight = viewDims[3];
-                            }
-                        } catch (e) {
-                            console.warn(e);
-                        }
-
-                        require('assets/magix/helper').showDialog("assets/magix/edit_view", {
-                            viewOptions: {
-                                unicode: parseInt(code, 16),
-                                name,
-                                id,
-                                viewWidth,
-                                viewHeight,
-                                isProject: true,
-                                show_svg: xmlString
-                            },
-                            width: 910,
-                            height: 685,
-                            dockClass: "edit-dialog"
-                        })
-                    });
-
-                });
-
-                return icon;
-            }
-
-            function GetDetailSvgProps(svgDom) {
-                var viewBox = svgDom.getAttribute('viewBox');
-
-            }
-
-        })
-
         define("app/index", ["magix", "assets/magix/helper", 'tmpl'], function (i, a, e) {
             var v = i("magix")
                 , t = v.Router
@@ -156,9 +85,7 @@
             })
         });
 
-
-
-        seajs.use(['magix', "jquery", "pat", "buildIcons", "tmpl"], function (Magix, jquery, pat, buildIcons) {
+        seajs.use(['magix', 'tmpl', "buildIcons"], function (Magix, tmpl, buildIcons) {
 
             Magix.boot({
                 defaultPath: '/index',
@@ -171,22 +98,15 @@
                 },
                 exts: ["assets/magix/exts"]
             });
-
-            //加载图标
+            //加载项目列表
             $.ajax({
-                url: '/svg/icons',
+                url: '/svg/proj'
             }).then(function (res) {
-
-                var frame = document.createDocumentFragment();
-                res.sort((a, b) => {//将图标以code大小顺序排序一下
-                    return a.code.localeCompare(b.code) > 0 ? 1 : -1
-                });
-
-                for (var i = 0; i < res.length; i++) {
-                    frame.appendChild(buildIcons(res[i]));
-                }
-                document.getElementById('icons').appendChild(frame)
-            });
+                document.querySelector('#projects').innerHTML = res.map(function (item) {
+                    return `<option value="${item.id}:${encodeURIComponent(item.fontname)}">${item.name}</option>`;
+                }).join('');
+            }, function () { })
+            buildIcons();//
         });
 
     </script>

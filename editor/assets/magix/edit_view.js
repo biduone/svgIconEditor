@@ -200,14 +200,15 @@ define("assets/magix/edit_view", ["magix", "assets/magix/helper", "jquery", "ass
             this.render()
         },
         "update<click>": function (saveArgs) {
-            var thisView = this,
+            var data = this.data,
                 svgDomStr = jQ("#J_icon_container svg")[0].outerHTML;
 
             jQ.ajax({
                 url: '/svg/save',
                 method: 'post',
                 data: {
-                    fn: thisView.data.id,
+                    fn: data.id,
+                    pid: data.pid,
                     svgFile: svgDomStr
                 },
                 complete: function (xhr, a, b, c) {
@@ -215,7 +216,7 @@ define("assets/magix/edit_view", ["magix", "assets/magix/helper", "jquery", "ass
                     //return helper.showGlobalTip('保存失败');
                     if (res.succ) {
                         setTimeout(function () {
-                            renewFontIcon();
+                            renewFontIcon(data.fontname);
                         }, 500)
                         helper.hideDialog();
                     } else {

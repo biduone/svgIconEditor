@@ -82,10 +82,25 @@ body>.icon-pt {
     line-height: normal;
 }
 
+.project-opts select {
+    display: inline-block;
+}
+
 .ext-opts {
-    display: flex;
-    flex-direction: row;
-    padding-top: 4px;
+    padding-top: 10px;
+}
+
+.ext-opts>* {
+    display: none;
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+    border-bottom: 2px dashed #eee;
+}
+
+.ext-opts>*:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
 }
 
 .opt-icons {
@@ -170,4 +185,32 @@ body>.icon-pt {
 .upload-svg svg {
     width: 60px;
     height: 60px;
+}
+
+#add-proj {
+    color: green;
+    cursor: pointer;
+}
+
+#add-proj-opt>* {
+    line-height: normal;
+    height: 20px;
+    padding: 0;
+    margin: 0;
+    padding: 2px 4px 3px 4px;
+    border: 1px solid #aaa;
+    border-radius: 2px;
+    margin-right: 10px;
+    outline: none;
+}
+
+#add-proj-opt>*:focus {
+    border: 1px solid transparent;
+    box-shadow: 0 0 5px -1px #0099ff;
+}
+
+#add-proj-opt>button {
+    padding: 4px 10px 5px 10px;
+    border: none;
+    height: 26px;
 }

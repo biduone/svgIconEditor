@@ -9,9 +9,7 @@ let fs = require('fs'),
 /**
  * 
  * @param {Object} config 
- * @param {String} config.domain 'localhost',
- * @param {String} config.port 8089,
- * @param {String} config.prefixPath 'svgedit',
+ * @param {Object} config.name 字体名 
  * @param {Object[]]} config.svgs 'svgs',
  * @param {String} config.outputFolder 'fonts',
  * @param {String[]} config.fontTypes ['ttf', 'eot', 'woff', 'woff2']
@@ -19,7 +17,7 @@ let fs = require('fs'),
 module.exports = async function SvgIconBuilder(config) {
     console.log(config.outputFolder, config.fontTypes)
     var projConfig = {
-        name: 'echat',
+        name: config.name || 'echat',
         svgs: config.svgs,
         dest: config.outputFolder,
         supportTypes: config.fontTypes

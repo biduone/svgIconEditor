@@ -1,28 +1,49 @@
 //file:test.js
 const sqlite3 = require('sqlite3'),
     Utils = require("./Utils"),
-    tableName = "svgs";
+    iconTableName = "svgs";
+projTableName = "projects";
 
 let dbInstance;
+
+exports.queryProjects = async function (db) {
+    return await runSQL(`select id, name, fontname, desc from ${projTableName}`);
+}
+
+exports.queryProjInfo = async function (pid) {
+    return await runSQL(`select id, name,fontname, desc from ${projTableName} where id=?`, [pid]);
+}
+/**
+ * 
+ * @param {Object} proj 
+ * @param {String} proj.name 
+ * @param {String} proj.fontname 
+ * @param {String} proj.desc
+ * @param {*} db 
+ */
+exports.addProjects = async function (proj, db) {
+    await runSQL(`insert into ${projTableName} (name, fontname, desc) values (?,?,?)`, [proj.name, proj.fontname, proj.desc]);
+    return await exports.queryProjects();
+}
 
 exports.querySingleIcon = async function (fontId, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).all(`select svg from ${tableName} where id=?`, [fontId], callback);
+    (db || dbInstance).all(`select projectId, id,code,name,svg from ${iconTableName} where id=?`, [fontId], callback);
     return promise;
 }
 
-exports.queryIconsInfo = function (projectId = 1, db) {
+exports.queryIconsInfo = function (projectId, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).all(`select id, code, name from ${tableName} where projectId=?`, [projectId], callback);
+    (db || dbInstance).all(`select id, code, name from ${iconTableName} where projectId=?`, [projectId || 1], callback);
     return promise;
 }
 
-exports.queryAllSvgInfo = function (projectId = 1, db) {
+exports.queryAllSvgInfo = function (projectId, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).all(`select id, code, name, svg from ${tableName} where projectId=?`, [projectId], callback);
+    (db || dbInstance).all(`select id, code, name, svg from ${iconTableName} where projectId=?`, [projectId], callback);
     return promise;
 }
 /** 添加svg
@@ -34,7 +55,7 @@ exports.queryAllSvgInfo = function (projectId = 1, db) {
 exports.addSvg = function (svg, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).run(`insert into ${tableName} (projectId,name,code,svg,updatetime) values(?,?,?,?,?)`,
+    (db || dbInstance).run(`insert into ${iconTableName} (projectId,name,code,svg,updatetime) values(?,?,?,?,?)`,
         [svg.projectId || 0, svg.name, svg.code, svg.svg, Date.now()], callback);
 
     return promise;
@@ -44,7 +65,7 @@ exports.updateSvg = function (fontId, svg) {
 
     let { callback, promise } = DBPromise();
 
-    dbInstance.run(`UPDATE ${tableName} set svg=? where id=?`, [svg, fontId], callback);
+    dbInstance.run(`UPDATE ${iconTableName} set svg=? where id=?`, [svg, fontId], callback);
 
     return promise;
 }
@@ -52,10 +73,10 @@ exports.updateSvg = function (fontId, svg) {
  * 初始创建数据库
  * @returns {promise}
  */
-exports.createIconTables = function (db) {
+exports.initIconTable = function (db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).run(`CREATE TABLE IF NOT EXISTS ${tableName} (
+    (db || dbInstance).run(`CREATE TABLE IF NOT EXISTS ${iconTableName} (
         id Integer primary key autoincrement, 
         projectId varchar(100),
         name varchar(255),
@@ -63,6 +84,36 @@ exports.createIconTables = function (db) {
         svg TEXT,
         updatetime Integer
     )`, callback);
+    return promise;
+
+}
+
+/**
+ * 初始创建数据库
+ * @returns {promise}
+ */
+exports.initProjectTable = function (db) {
+
+    let { callback, promise } = DBPromise();
+    (db || dbInstance).run(`CREATE TABLE IF NOT EXISTS projects (
+        id Integer primary key autoincrement, 
+        name varchar(255),
+        fontname varchar(255),
+        desc varchar(512),
+        updatetime Integer
+    )`, async (a, b) => {
+        const { rows } = await runSQL('select count(id) as count from projects');
+        if (!rows || !rows[0] || rows[0].count === 0) {
+            const { err, rows } = await runSQL(`insert into projects (id,name,fontname,desc,updatetime) 
+                values (1,'Echat','echat','Echat Staff Client',${Date.now()})`);
+
+            if (err) {
+                throw "Create project table failure"
+            }
+            callback({ err, rows });
+        }
+
+    });
     return promise;
 
 }
@@ -80,6 +131,18 @@ exports.initIconsDB = function (dbName) {
     });
 
     return Defer.promise
+}
+/**
+ * 
+ * @param {string} sql 
+ * @param {string[]|number[]} params 
+ * @param {Object=} db 
+ */
+function runSQL(sql, params, db) {
+
+    let { callback, promise } = DBPromise();
+    (db || dbInstance).all(sql, params, callback);
+    return promise;
 }
 
 function DBPromise() {
