@@ -1,0 +1,25 @@
+{
+  "name": "icon",
+  "version": "1.0.0",
+  "description": "The project for icon",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node server/index.js"
+  },
+  "devDependencies": {
+    "body-parser": "1.19.0",
+    "cookie-parser": "1.4.5",
+    "express": "4.17.1",
+    "install": "0.13.0",
+    "npm": "7.12.1",
+    "sqlite3": "4.1.0",
+    "svg2ttf": "4.3.0",
+    "svgicons2svgfont": "9.1.1",
+    "ttf2eot": "2.0.0",
+    "ttf2woff": "2.0.1",
+    "ttf2woff2": "3.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
