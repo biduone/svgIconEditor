@@ -5,12 +5,14 @@ var cookieParser = require('cookie-parser')
 
 const builder = require('../svgIconBuilder');
 const sqliteDB = require('./sqliteDB');
-const accouts = require('./verifycode.json')
+const accouts = require('./verifycode.json');
+const { Config: {
+    SERVER_PORT,
+    EXPIRATION,
+    SERVER_PREFIX,
+    VERIFY_COOKIE
+} } = require('./serverConfig');
 
-const SERVER_PORT = "8089",
-    EXPIRATION = 12 * 3600,//12小时
-    SERVER_PREFIX = "",
-    VERIFY_COOKIE = "logcc";
 
 var loginSessions = {};
 var http = Express();
@@ -34,7 +36,7 @@ http.use(function (req, resp, next) {
         //更新登录时间
         loginSessions[verifyCode] = Date.now();
         next();
-    } else if (decideUrl("/svg/login") === req.url) {
+    } else if (decideUrl("/svg/login") === req.url || decideUrl("/svg/iconsWithContent") === req.url) {
         //跳过登录请求
         next();
     } else {//没有登录的返回401
@@ -81,7 +83,7 @@ http.post(decideUrl("/svg/addProj"), async function (req, resp) {
     respone(resp, JSON.stringify(rows));
 });
 
-
+/** 页面上读取svg信息来显示 */
 http.post(decideUrl("/svg/icons"), async function (req, resp) {
 
     const { body } = req;
@@ -91,16 +93,19 @@ http.post(decideUrl("/svg/icons"), async function (req, resp) {
     respone(resp, JSON.stringify(rows));
 });
 
-
+/** 提供给开发者拉取svg列表 */
 http.post(decideUrl("/svg/iconsWithContent"), async function (req, resp) {
 
     const { body } = req;
-    const { err, rows } = await sqliteDB.queryAllSvgInfo(body.pid);
+    if (!accouts[body.verifycode]) {
+        return respone(resp, '', 413);
+    }
+    const { err, rows } = await sqliteDB.queryAllSvgInfo(body.pid || 1);
 
     resp.setHeader("content-type", "application/json; charset=UTF-8");
     respone(resp, JSON.stringify(rows));
 });
-
+/**单个svg */
 http.get(decideUrl("/svg/get"), async function (req, resp) {
     var fontId = req.query['fn'];
     if (!fontId) {
@@ -112,7 +117,7 @@ http.get(decideUrl("/svg/get"), async function (req, resp) {
     respone(resp, JSON.stringify(rows[0]));
 
 });
-
+/**保存修改 */
 http.post(decideUrl("/svg/save"), async function (req, resp) {
     var { body } = req,
         fn = body['fn'],
@@ -143,7 +148,7 @@ http.post(decideUrl("/svg/save"), async function (req, resp) {
     }
 
 });
-
+/**上传新svg文件 */
 http.post(decideUrl("/svg/upload"), async function (req, resp) {
     const { body: { icons, pid } = {} } = req;
     const { rows } = await sqliteDB.queryAllSvgInfo();

@@ -1,17 +1,22 @@
 //file:test.js
 const sqlite3 = require('sqlite3'),
     Utils = require("./Utils"),
-    iconTableName = "svgs";
-projTableName = "projects";
+    {
+        DBConf: {
+            DBName,
+            ProjTableName,
+            IconTableName
+        }
+    } = require("./serverConfig");
 
 let dbInstance;
 
 exports.queryProjects = async function (db) {
-    return await runSQL(`select id, name, fontname, desc from ${projTableName}`);
+    return await runSQL(`select id, name, fontname, desc from ${ProjTableName}`);
 }
 
 exports.queryProjInfo = async function (pid) {
-    return await runSQL(`select id, name,fontname, desc from ${projTableName} where id=?`, [pid]);
+    return await runSQL(`select id, name,fontname, desc from ${ProjTableName} where id=?`, [pid]);
 }
 /**
  * 
@@ -22,28 +27,28 @@ exports.queryProjInfo = async function (pid) {
  * @param {*} db 
  */
 exports.addProjects = async function (proj, db) {
-    await runSQL(`insert into ${projTableName} (name, fontname, desc) values (?,?,?)`, [proj.name, proj.fontname, proj.desc]);
+    await runSQL(`insert into ${ProjTableName} (name, fontname, desc) values (?,?,?)`, [proj.name, proj.fontname, proj.desc]);
     return await exports.queryProjects();
 }
 
 exports.querySingleIcon = async function (fontId, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).all(`select projectId, id,code,name,svg from ${iconTableName} where id=?`, [fontId], callback);
+    (db || dbInstance).all(`select projectId, id,code,name,svg from ${IconTableName} where id=?`, [fontId], callback);
     return promise;
 }
 
 exports.queryIconsInfo = function (projectId, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).all(`select id, code, name from ${iconTableName} where projectId=?`, [projectId || 1], callback);
+    (db || dbInstance).all(`select id, code, name from ${IconTableName} where projectId=?`, [projectId || 1], callback);
     return promise;
 }
 
 exports.queryAllSvgInfo = function (projectId, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).all(`select id, code, name, svg from ${iconTableName} where projectId=?`, [projectId], callback);
+    (db || dbInstance).all(`select id, code, name, svg from ${IconTableName} where projectId=?`, [projectId], callback);
     return promise;
 }
 /** 添加svg
@@ -55,7 +60,7 @@ exports.queryAllSvgInfo = function (projectId, db) {
 exports.addSvg = function (svg, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).run(`insert into ${iconTableName} (projectId,name,code,svg,updatetime) values(?,?,?,?,?)`,
+    (db || dbInstance).run(`insert into ${IconTableName} (projectId,name,code,svg,updatetime) values(?,?,?,?,?)`,
         [svg.projectId || 0, svg.name, svg.code, svg.svg, Date.now()], callback);
 
     return promise;
@@ -65,7 +70,7 @@ exports.updateSvg = function (fontId, svg) {
 
     let { callback, promise } = DBPromise();
 
-    dbInstance.run(`UPDATE ${iconTableName} set svg=? where id=?`, [svg, fontId], callback);
+    dbInstance.run(`UPDATE ${IconTableName} set svg=? where id=?`, [svg, fontId], callback);
 
     return promise;
 }
@@ -76,7 +81,7 @@ exports.updateSvg = function (fontId, svg) {
 exports.initIconTable = function (db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).run(`CREATE TABLE IF NOT EXISTS ${iconTableName} (
+    (db || dbInstance).run(`CREATE TABLE IF NOT EXISTS ${IconTableName} (
         id Integer primary key autoincrement, 
         projectId varchar(100),
         name varchar(255),
@@ -95,22 +100,22 @@ exports.initIconTable = function (db) {
 exports.initProjectTable = function (db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).run(`CREATE TABLE IF NOT EXISTS projects (
+    (db || dbInstance).run(`CREATE TABLE IF NOT EXISTS ${ProjTableName} (
         id Integer primary key autoincrement, 
         name varchar(255),
         fontname varchar(255),
         desc varchar(512),
         updatetime Integer
     )`, async (a, b) => {
-        const { rows } = await runSQL('select count(id) as count from projects');
+        const { rows } = await runSQL(`select count(id) as count from ${ProjTableName}`);
         if (!rows || !rows[0] || rows[0].count === 0) {
-            const { err, rows } = await runSQL(`insert into projects (id,name,fontname,desc,updatetime) 
+            const { err, rows } = await runSQL(`insert into ${ProjTableName} (id,name,fontname,desc,updatetime) 
                 values (1,'Echat','echat','Echat Staff Client',${Date.now()})`);
 
             if (err) {
                 throw "Create project table failure"
             }
-            callback({ err, rows });
+            callback(err, rows);
         }
 
     });
@@ -118,11 +123,10 @@ exports.initProjectTable = function (db) {
 
 }
 
-
 exports.initIconsDB = function (dbName) {
     console.log("init Icon Sqlit db");
     let Defer = Utils.defer();
-    dbInstance = new sqlite3.Database(dbName || `${__dirname}/font_icons.sqlite3`, function (a, b, c) {
+    dbInstance = new sqlite3.Database(dbName || `${__dirname}/${DBName}`, function (a, b, c) {
         if (a === null) {
             Defer.resolve(dbInstance);
         } else {
