@@ -8,7 +8,7 @@ const sqliteDB = require('./sqliteDB');
 const accouts = require('./verifycode.json')
 
 const SERVER_PORT = "8089",
-    START_INDEX = 65535,
+    EXPIRATION = 12 * 3600,//12小时
     SERVER_PREFIX = "",
     VERIFY_COOKIE = "logcc";
 
@@ -23,12 +23,19 @@ http.use(function (req, resp, next) {
 
     const { cookies } = req,
         verifyCode = decodeVC(cookies[VERIFY_COOKIE] || '');
-    //跳过登录请求
-    if (decideUrl("/svg/login") === req.url || accouts[verifyCode]) {
-        if (accouts[verifyCode]) {
-            //更新登录时间
-            loginSessions[verifyCode] = Date.now();
+
+    if (accouts[verifyCode]) {
+        //清除登录过期的
+        if (loginSessions[verifyCode] && (Date.now() - loginSessions[verifyCode]) > EXPIRATION * 100) {
+            resp.clearCookie(VERIFY_COOKIE);
+            respone(resp, '', 401);
+            return;
         }
+        //更新登录时间
+        loginSessions[verifyCode] = Date.now();
+        next();
+    } else if (decideUrl("/svg/login") === req.url) {
+        //跳过登录请求
         next();
     } else {//没有登录的返回401
         respone(resp, '', 401);
@@ -44,6 +51,8 @@ http.post(decideUrl("/svg/login"), async function (req, resp) {
 
     if (body.verifycode && accouts[body.verifycode]) {
         resp.cookie(VERIFY_COOKIE, encodeVC(body.verifycode));
+        //更新登录时间
+        loginSessions[body.verifycode] = Date.now();
         respone(resp, respRes(true));
     } else {
         respone(resp, respRes(false));
@@ -77,6 +86,16 @@ http.post(decideUrl("/svg/icons"), async function (req, resp) {
 
     const { body } = req;
     const { err, rows } = await sqliteDB.queryIconsInfo(body.pid);
+
+    resp.setHeader("content-type", "application/json; charset=UTF-8");
+    respone(resp, JSON.stringify(rows));
+});
+
+
+http.post(decideUrl("/svg/iconsWithContent"), async function (req, resp) {
+
+    const { body } = req;
+    const { err, rows } = await sqliteDB.queryAllSvgInfo(body.pid);
 
     resp.setHeader("content-type", "application/json; charset=UTF-8");
     respone(resp, JSON.stringify(rows));
