@@ -175,8 +175,10 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
 
     //选择项目
     $$('#projects')[0].addEventListener('change', function (evt) {
-        buildIcons(this.value.split(':')[0]);
-        renewFontIcon(this.value.split(':')[1]);
+        var vals = this.value.split(':');
+        buildIcons(vals[0]);
+        renewFontIcon(vals[1]);
+        localStorage.setItem("currentPid", vals[0])
     });
 
     //图标颜色
@@ -211,17 +213,16 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
     //上传图标
     upload.addEventListener('change', function (evt) {
 
-        if (willUploads.length == 8) {
-            return alert('一次上传最多8个');
-        }
+        let length = willUploads.length;
 
-        for (let i = 0; i < this.files.length; i++) {
-            Read(this.files[i])
+        for (let i = length - 1; i < 20; i++) {
+            if (this.files[i]) {
+                Read(this.files[i], i);
+            }
         }
         uploadOpt.style.display = "flex";
 
-
-        function Read(file) {
+        function Read(file, index) {
             var FR = new FileReader();
             FR.onload = evt => {
                 try {
@@ -233,10 +234,9 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
                     return alert("不是标准的svg文件");
                 }
 
-                if (willUploads.length < 8) {
-                    exts.innerHTML += "<div class='upload-svg'>" + evt.target.result + "</div>";
-                    willUploads.push({ name: file.name.replace(/\.svg/i, ''), svg: evt.target.result });
-                }
+                exts.innerHTML += "<div class='upload-svg icon-edit'>" + evt.target.result + "</div>";
+                willUploads[index] = { name: file.name.replace(/\.svg/i, ''), svg: evt.target.result };
+
             }
             FR.readAsText(file, 'utf-8');
         }
@@ -254,8 +254,10 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
             url: '/svg/upload',
             method: 'post',
             data: { icons: willUploads, pid: pid }
-        }).then(function (e) {
-
+        }).then(function (res) {
+            if (res.succ) {
+                location.reload();
+            }
         }, function () {
             $$('#upload-cancel')[0].click();
         });

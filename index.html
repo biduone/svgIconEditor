@@ -36,7 +36,7 @@
 <body>
     <div class="nav-header">
         <div class="project-opts">
-            <span>项目<select id="projects"></select><span id="add-proj" title="添加">＋✚</span></span>
+            <span>项目：<select id="projects"></select>&nbsp;&nbsp;<span id="add-proj" title="添加">✚</span></span>
             <a id="icon-up" href="javascript:;">上传图标<span class="upload-ico">₪</span>
                 <input type="file" id="uploadinput" multiple="" accept="image/svg+xml" class="upload-input" />
             </a>
@@ -53,7 +53,8 @@
             </form>
             <div id="upload-svg-opt">
                 <div class="opt-icons" id="ext-icons"></div>
-                <div><button id="upload-btn">上传</button><button id="upload-cancel">取消</button></div>
+                <div class="upload-opt-btns"><button id="upload-btn">上传</button><button id="upload-cancel">取消</button>
+                </div>
             </div>
         </div>
     </div>
@@ -107,7 +108,7 @@
                     return `<option value="${item.id}:${encodeURIComponent(item.fontname)}">${item.name}</option>`;
                 }).join('');
             }, function () { })
-            buildIcons();//
+            buildIcons(localStorage.getItem("currentPid"));//
         });
 
     </script>

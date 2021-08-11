@@ -106,8 +106,10 @@ body>.icon-pt {
 
 .opt-icons {
     display: flex;
+    flex-wrap: wrap;
     overflow-x: auto;
     flex-direction: row;
+    width: calc(100% - 100px);
 }
 
 .opt-icons:not(:empty) {
@@ -120,6 +122,10 @@ body>.icon-pt {
 
 .opt-icons:empty+div {
     display: none;
+}
+
+.upload-opt-btns>button {
+    margin-left: 10px;
 }
 
 .pofix {
