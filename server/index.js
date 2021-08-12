@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser')
 
 const builder = require('../svgIconBuilder');
 const sqliteDB = require('./sqliteDB');
+const cryptoUtil = require("./crypto");
 const accouts = require('./verifycode.json');
 const { Config: {
     SERVER_PORT,
@@ -24,7 +25,7 @@ http.use(cookieParser());
 http.use(function (req, resp, next) {
 
     const { cookies } = req,
-        verifyCode = decodeVC(cookies[VERIFY_COOKIE] || '');
+        verifyCode = cookies[VERIFY_COOKIE] || '';
 
     if (accouts[verifyCode]) {
         //清除登录过期的
@@ -50,11 +51,13 @@ http.post(decideUrl("/svg/login"), async function (req, resp) {
     resp.setHeader("content-type", "application/json; charset=UTF-8");
 
     var { body } = req;
+    var successful = cryptoUtil.checkCrypto(body.verifycode),
+        cryptKey = cryptoUtil.encrypt(body.verifycode);
 
-    if (body.verifycode && accouts[body.verifycode]) {
-        resp.cookie(VERIFY_COOKIE, encodeVC(body.verifycode));
+    if (body.verifycode && successful) {
+        resp.cookie(VERIFY_COOKIE, cryptKey);
         //更新登录时间
-        loginSessions[body.verifycode] = Date.now();
+        loginSessions[cryptKey] = Date.now();
         respone(resp, respRes(true));
     } else {
         respone(resp, respRes(false));
@@ -256,6 +259,7 @@ function encodeVC(code = "") {
     for (let k in replaceWord) {
         code = code.replace(k, replaceWord[k]);
     }
+    console.log("encodeVC", code)
     return code;
 }
 
@@ -264,6 +268,7 @@ function decodeVC(code) {
     for (let k in replaceWord) {
         code = code.replace(replaceWord[k], k);
     }
+    console.log("decodeVC", code)
     return atob(code);
 }
 
