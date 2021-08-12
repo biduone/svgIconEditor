@@ -89,6 +89,10 @@ http.post(decideUrl("/svg/icons"), async function (req, resp) {
     const { body } = req;
     const { err, rows } = await sqliteDB.queryIconsInfo(body.pid);
 
+    rows.sort((a, b) => {//将图标以code大小顺序排序一下
+        return a.code.localeCompare(b.code) > 0 ? 1 : -1
+    });
+
     resp.setHeader("content-type", "application/json; charset=UTF-8");
     respone(resp, JSON.stringify(rows));
 });
@@ -148,26 +152,45 @@ http.post(decideUrl("/svg/save"), async function (req, resp) {
     }
 
 });
+
+/**保存修改 */
+http.post(decideUrl("/svg/remove"), async function (req, resp) {
+    var { body: { fn: fontId } } = req;
+    if (!fontId) {
+        return respone(resp, respRes(false));
+    }
+    const res = await sqliteDB.delSvg(fontId);
+    RespToJson(resp);
+    return respone(resp, respRes(!res.err));
+});
 /**上传新svg文件 */
 http.post(decideUrl("/svg/upload"), async function (req, resp) {
     const { body: { icons, pid } = {} } = req;
-    const { rows } = await sqliteDB.queryAllSvgInfo();
+    const { rows } = await sqliteDB.queryIconsInfo(pid);
 
     rows.sort((a, b) => {//将图标以code大小顺序排序一下
         return a.code.localeCompare(b.code) > 0 ? 1 : -1
     });
 
-    let code = Number(`0x${rows[0].code}`);
+    let latestIcon = rows[0];
+    if (!latestIcon) {
+        latestIcon = { code: "fff0" };
+    }
+
+    let code = Number(`0x${latestIcon.code}`);
     for await (let svg of icons) {
         code = code - 1;
         sqliteDB.addSvg({ projectId: pid || 1, ...svg, code: code.toString(16), });
     }
 
+    resp.setHeader("content-type", "application/json; charset=UTF-8")
     try {
-        const { rows } = await sqliteDB.queryProjInfo(pid);
+        const { rows: projInfo } = await sqliteDB.queryProjInfo(pid);
+        const { rows: svgIcons } = await sqliteDB.queryAllSvgInfo(pid);
+
         await builder({
-            name: projs[0].fontname,
-            svgs: rows,
+            name: projInfo[0].fontname,
+            svgs: svgIcons,
             outputFolder: `${__dirname}/../fonts`,
             fontTypes: ['ttf', 'eot', 'woff', 'woff2']
         })
@@ -175,7 +198,29 @@ http.post(decideUrl("/svg/upload"), async function (req, resp) {
     } catch (e) {
         respone(resp, respRes(false));
     }
-    respone(resp, respRes(true))
+});
+
+/**上传新svg文件 */
+http.get(decideUrl("/svg/download"), async function (req, resp) {
+    var fontId = req.query['fn'];
+    if (!fontId) {
+        return respone(resp, respRes(false));
+    }
+
+    const { rows } = await sqliteDB.querySingleIcon(fontId);
+    const icon = rows[0];
+
+    if (!icon) {
+        return respone(resp, respRes(false));
+    }
+
+    resp.setHeader("content-type", "application/octet-stream");
+    resp.setHeader("Content-Disposition", "attachment;filename=" + encodeURIComponent(`${icon.name}.svg`));
+    resp.setHeader("Content-Length", icon.svg.length);//设置内容长度  
+    resp.write(icon.svg, "utf-8", function (err) {
+        resp.end()
+    })
+
 });
 
 (async function () {//初始化sqlite3 数据库
@@ -194,6 +239,10 @@ function respRes(bool) {
 }
 function respone(resp, res, code = 200,) {
     resp.writeHead(code).end(res);
+}
+
+function RespToJson(resp) {
+    resp.setHeader("content-type", "application/json; charset=UTF-8");
 }
 
 function decideUrl(serverUrl) {

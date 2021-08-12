@@ -14,27 +14,46 @@ seajs.config({
 
 define('buildIcons', [], function (require, exports, module) {
 
-    var iconContainer = document.getElementById('icons');
-    module.exports = function cloneIcon(pid) {
+    var icons = [], iconContainer = document.getElementById('icons');
+    module.exports.loadAndBuild = function cloneIcon(pid) {
         //加载图标(默认第一个项目)
         $.ajax({
             url: '/svg/icons',
             method: 'post',
             data: { pid: pid }
         }).then(function (res) {
-
-            var frame = document.createDocumentFragment();
-
-            res.sort((a, b) => {//将图标以code大小顺序排序一下
-                return a.code.localeCompare(b.code) > 0 ? 1 : -1
-            });
-
-            iconContainer.innerHTML = '';
-            for (var i = 0; i < res.length; i++) {
-                frame.appendChild(iconBuilder(res[i]));
-            }
-            iconContainer.appendChild(frame)
+            icons = res;
+            BuildFromJSON(icons);
         });
+    }
+
+    module.exports.filter = function _(keyStr) {
+        if (!keyStr) {
+            return BuildFromJSON(icons);
+        }
+        var filteredIcos = icons.filter(function _(ico) {
+            ico = ico || {};
+            var code = ico.code, name = ico.name;
+
+            if (code.indexOf(keyStr) > -1 || name.indexOf(keyStr) > -1) {
+                return true;
+            }
+        });
+        BuildFromJSON(filteredIcos);
+    }
+
+    function BuildFromJSON(res) {
+        var frame = document.createDocumentFragment();
+        /* 后端已排序
+        res.sort((a, b) => {//将图标以code大小顺序排序一下
+            return a.code.localeCompare(b.code) > 0 ? 1 : -1
+        }); */
+
+        iconContainer.innerHTML = '';
+        for (var i = 0; i < res.length; i++) {
+            frame.appendChild(iconBuilder(res[i]));
+        }
+        iconContainer.appendChild(frame)
     }
 
     var iconTpl = document.getElementsByClassName('icon-pt')[0];
@@ -48,17 +67,33 @@ define('buildIcons', [], function (require, exports, module) {
         icon.querySelector('.icon-html').innerText = `&#x${code};`;
 
         /** 编辑 */
-        var editBtn = icon.querySelector('.icon-edit');
-        editBtn.setAttribute('fn', id);
+        var editBtns = icon.querySelectorAll('.icon-edit');
+        for (let i = 0; i < editBtns.length; i++) {
+            editBtns[i].setAttribute('fn', id);
+        }
         return icon;
     }
 
 
     iconContainer.addEventListener('click', function (e) {
 
-        var fn = e.target.getAttribute('fn');
+        var fn = e.target.getAttribute('fn'),
+            fc = e.target.getAttribute('fc');
         if (!fn) return;
 
+        if (fc == 'edit') {
+            goEdit(fn);
+        } else if (fc == 'down') {
+            goDownload(fn);
+        } else if (fc == 'del') {
+            removeIco(fn, e.target);
+        } else if (fc == 'copy') {
+            doCopy(e.target);
+        }
+
+    });
+
+    function goEdit(fn) {
         $.ajax({ method: 'GET', url: `/svg/get`, data: { fn } }).then((svgInfo) => {
             var xmlString = svgInfo.svg.replace(/xmlns\=("|').+svg("|')/, ''),
                 code = svgInfo.code,
@@ -97,9 +132,46 @@ define('buildIcons', [], function (require, exports, module) {
                 dockClass: "edit-dialog"
             })
         });
+    }
 
-    });
+    function goDownload(fn) {
+        var downLink = document.createElement('a');
+        downLink.href = `/svg/download?fn=${fn}`;
+        downLink.target = "#download"
+        downLink.click()
+    }
 
+    function removeIco(fn, element) {
+        require('assets/magix/helper').showConfirm("确定要删除些图标吗？", function _(a, b, c) {
+            $.ajax({ method: 'POST', url: `/svg/remove`, data: { fn } }).then((res) => {
+                if (res.succ) {
+                    element.parentElement.parentElement.remove();
+                    icons = icons.filter(function _i(ico) {
+                        return ico.id != fn;
+                    })
+                }
+            })
+        }, function __(a, b, c) {
+        });
+    }
+
+    function doCopy(target) {
+        var copyTxtAra = document.querySelector("#text-copy"),
+            text = target.parentElement.parentElement.querySelector(".icon-code").innerHTML.replace("0x", "");
+
+        copyTxtAra.value = text;
+        copyTxtAra.select();
+        document.execCommand("copy");
+        doRestoreShow(target, "✓成功")
+    }
+
+    function doRestoreShow(element, newText, durationMs) {
+        var prevText = element.innerText;
+        element.innerText = newText;
+        setTimeout(function () {
+            element.innerText = prevText;
+        }, durationMs || 1000)
+    }
 });
 
 seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
@@ -175,8 +247,10 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
 
     //选择项目
     $$('#projects')[0].addEventListener('change', function (evt) {
-        buildIcons(this.value.split(':')[0]);
-        renewFontIcon(this.value.split(':')[1]);
+        var vals = this.value.split(':');
+        buildIcons.loadAndBuild(vals[0]);
+        renewFontIcon(vals[1]);
+        localStorage.setItem("currentPid", vals[0])
     });
 
     //图标颜色
@@ -192,12 +266,23 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
         setIconStyle({ size: this.value });
     });
 
+    //搜索图标
+    var seaTm, seainput = $$('#icon_search')[0];
+    seainput.addEventListener("input", function (e) {
+        var input = this;
+        clearTimeout(seaTm);
+        seaTm = setTimeout(function _() {
+            buildIcons.filter(input.value);
+        }, 600)
+
+    });
+
     setIconStyle();
     function setIconStyle(a) {
         a = a || {};
-        var color = a.color || localStorage.getItem('icon-color') || "#39ca39";
+        var color = a.color || localStorage.getItem('icon-color') || "#4180c3";
         var size = parseInt(a.size) || localStorage.getItem('icon-size') || 42;
-        st.innerHTML = `.font-icon{color: ${color}; font-size: ${size}px; }`;
+        st.innerHTML = `.font-icon{color: ${color}; font-size: ${size}px; } :root {--theme-color: ${color};}`;
         localStorage.setItem('icon-size', size);
         localStorage.setItem('icon-color', color);
         scinput.value = color;
@@ -211,17 +296,16 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
     //上传图标
     upload.addEventListener('change', function (evt) {
 
-        if (willUploads.length == 8) {
-            return alert('一次上传最多8个');
-        }
+        let length = willUploads.length;
 
-        for (let i = 0; i < this.files.length; i++) {
-            Read(this.files[i])
+        for (let i = length - 1; i < 20; i++) {
+            if (this.files[i]) {
+                Read(this.files[i], i);
+            }
         }
         uploadOpt.style.display = "flex";
 
-
-        function Read(file) {
+        function Read(file, index) {
             var FR = new FileReader();
             FR.onload = evt => {
                 try {
@@ -233,10 +317,9 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
                     return alert("不是标准的svg文件");
                 }
 
-                if (willUploads.length < 8) {
-                    exts.innerHTML += "<div class='upload-svg'>" + evt.target.result + "</div>";
-                    willUploads.push({ name: file.name.replace(/\.svg/i, ''), svg: evt.target.result });
-                }
+                exts.innerHTML += "<div class='upload-svg icon-edit'>" + evt.target.result + "</div>";
+                willUploads[index] = { name: file.name.replace(/\.svg/i, ''), svg: evt.target.result };
+
             }
             FR.readAsText(file, 'utf-8');
         }
@@ -254,8 +337,10 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
             url: '/svg/upload',
             method: 'post',
             data: { icons: willUploads, pid: pid }
-        }).then(function (e) {
-
+        }).then(function (res) {
+            if (res.succ) {
+                location.reload();
+            }
         }, function () {
             $$('#upload-cancel')[0].click();
         });

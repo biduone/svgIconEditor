@@ -78,10 +78,21 @@
     vertical-align: middle
 }
 
-body, button, input, select, textarea {
+body, button {
     font-size: 12px;
     color: #333;
-    font-family: tahoma, "microsoft yahei", "\5FAE\8F6F\96C5\9ED1"!important
+    font-family: tahoma, "microsoft yahei", "\5FAE\8F6F\96C5\9ED1"!important;
+}
+
+input, select, textarea {
+    font-size: 12px;
+    color: #333;
+    font-family: tahoma, "microsoft yahei", "\5FAE\8F6F\96C5\9ED1"!important;
+    border: none;
+    box-shadow: 0 0 1px 0 #000;
+    border-radius: 1px;
+    outline: none;
+    padding: 3px 2px 3px 4px;
 }
 
 a {

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="./editor/assets/editor.css">
 
-    <title>Icon project for Echat</title>
+    <title>Echat IconMan</title>
     <style id="font-style">
         @font-face {
             font-family: echat;
@@ -24,7 +24,7 @@
     <style id="cc-style">
         /**图标样式控制*/
         .font-icon {
-            color: #39ca39;
+            color: #4180c3;
         }
     </style>
     <script src="./editor/assets/seajs.js"></script>
@@ -36,12 +36,14 @@
 <body>
     <div class="nav-header">
         <div class="project-opts">
-            <span>项目<select id="projects"></select><span id="add-proj" title="添加">＋✚</span></span>
-            <a id="icon-up" href="javascript:;">上传图标<span class="upload-ico">₪</span>
+            <span>项目：<select id="projects"></select>&nbsp;&nbsp;<span id="add-proj" class="theme-color"
+                    title="添加">✚</span></span>
+            <a id="icon-up" href="javascript:;">上传图标<span class="upload-ico theme-color">₪</span>
                 <input type="file" id="uploadinput" multiple="" accept="image/svg+xml" class="upload-input" />
             </a>
-            <span>图标颜色：<input type="color" id="icon_color" value="#39ca39" /></span>
-            <span>图标大小：<input type="number" id="icon_size" value="42" style="width: 34px;" /></span>
+            <span>图标颜色：<input type="color" id="icon_color" value="#4180c3" /></span>
+            <span>图标大小：<input type="number" id="icon_size" value="42" style="width: 40px;" /></span>
+            <span>搜索：<input type="text" id="icon_search" style="width: 100px;" /></span>
             <form id="logins"></form>
         </div>
         <div class="ext-opts">
@@ -49,11 +51,13 @@
                 <input type="text" name="name" placeholder="项目名称" /><input type="text" name="fontname"
                     placeholder="字体文件名称(字母、数字组合)" />
                 <textarea name="desc" placeholder="项目描述"></textarea>
-                <button>提交</button><button id="cancel-add-proj">取消</button>
+                <button class="btn-flat">提交</button><button class="btn-flat" id="cancel-add-proj">取消</button>
             </form>
             <div id="upload-svg-opt">
                 <div class="opt-icons" id="ext-icons"></div>
-                <div><button id="upload-btn">上传</button><button id="upload-cancel">取消</button></div>
+                <div class="upload-opt-btns">
+                    <button id="upload-btn" class="btn-flat">上传</button><button id="upload-cancel" class="btn-flat">取消</button>
+                </div>
             </div>
         </div>
     </div>
@@ -65,8 +69,16 @@
         <div class="icon-info">
             <span class="icon-name"></span>
             <div><span class="icon-code"></span>&nbsp;&nbsp;<span class="icon-html"></span></div>
-            <div class="icon-edit-btns"><span class="icon-edit">编辑</span></div>
         </div>
+        <div class="icon-edit-btns">
+            <span class="icon-edit" fc="edit">✎编辑</span>
+            <span class="icon-edit" fc="down">↙下载</span>
+            <span class="icon-edit" fc="del">✕删除</span>
+            <span class="icon-edit" fc="copy">❐复制</span>
+        </div>
+    </div>
+    <div class="hide-element" style="width:1px; height:1px; opacity:0">
+        <textarea id="text-copy"></textarea>
     </div>
 
     <div id="root"></div>
@@ -107,7 +119,7 @@
                     return `<option value="${item.id}:${encodeURIComponent(item.fontname)}">${item.name}</option>`;
                 }).join('');
             }, function () { })
-            buildIcons();//
+            buildIcons.loadAndBuild(localStorage.getItem("currentPid"));//
         });
 
     </script>

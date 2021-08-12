@@ -87,11 +87,11 @@ define("assets/magix/helper", ["assets/magix/dialog", "assets/magix/globaltip", 
           }]
         })
       },
-      showConfirm: function(t, e, n, o) {
+      showConfirm: function(content, okFn, cancelFn, options) {
         this.globalDialog = i.msgbox(r.extend({
           title: "",
           mask: !0,
-          content: t,
+          content: content,
           dockClass: "block-confirm",
           width: 300,
           height: 150,
@@ -100,13 +100,13 @@ define("assets/magix/helper", ["assets/magix/dialog", "assets/magix/globaltip", 
           buttons: [{
             text: s.COMMON_CONFIRM,
             dock: "btn-red mr20",
-            fn: e
+            fn: okFn
           }, {
             text: s.COMMON_CANCEL,
             dock: "btn-grayc",
-            fn: n
+            fn: cancelFn
           }]
-        }, o || {}))
+        }, options || {}))
       },
       injectIconHasAddcar: function(t) {
         var e = this.getItem(this.CAR_ICON_KEY)

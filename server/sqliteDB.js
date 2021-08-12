@@ -74,6 +74,15 @@ exports.updateSvg = function (fontId, svg) {
 
     return promise;
 }
+
+exports.delSvg = function (fontId) {
+
+    let { callback, promise } = DBPromise();
+
+    dbInstance.run(`delete from ${IconTableName} where id=?`, [fontId], callback);
+
+    return promise;
+}
 /**
  * 初始创建数据库
  * @returns {promise}
