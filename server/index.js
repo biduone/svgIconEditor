@@ -129,6 +129,7 @@ http.post(decideUrl("/svg/save"), async function (req, resp) {
     var { body } = req,
         fn = body['fn'],
         pid = body.pid,
+        name = body.name,
         fileString = body['svgFile'];
 
     resp.setHeader("content-type", "application/json; charset=UTF-8")
@@ -137,7 +138,7 @@ http.post(decideUrl("/svg/save"), async function (req, resp) {
         return respone(resp, respRes(false));
     }
 
-    await sqliteDB.updateSvg(fn, fileString);
+    await sqliteDB.updateSvg(fn, name, fileString);
 
     const { rows: projs } = await sqliteDB.queryProjInfo(pid);
     const { rows } = await sqliteDB.queryAllSvgInfo(pid || 1);
@@ -177,13 +178,15 @@ http.post(decideUrl("/svg/upload"), async function (req, resp) {
 
     let latestIcon = rows[0];
     if (!latestIcon) {
-        latestIcon = { code: "fff0" };
+        latestIcon = { code: "efff" };
     }
 
     let code = Number(`0x${latestIcon.code}`);
     for await (let svg of icons) {
-        code = code - 1;
-        sqliteDB.addSvg({ projectId: pid || 1, ...svg, code: code.toString(16), });
+        if (svg && svg.svg) {
+            code = code - 1;
+            sqliteDB.addSvg({ projectId: pid || 1, ...svg, code: code.toString(16), });
+        }
     }
 
     resp.setHeader("content-type", "application/json; charset=UTF-8")
@@ -218,10 +221,17 @@ http.get(decideUrl("/svg/download"), async function (req, resp) {
     }
 
     resp.setHeader("content-type", "application/octet-stream");
-    resp.setHeader("Content-Disposition", "attachment;filename=" + encodeURIComponent(`${icon.name}.svg`));
+    resp.setHeader("Content-Disposition", "attachment;filename=" + encodeURIComponent(`${icon.code}$${icon.name}.svg`));
     resp.setHeader("Content-Length", icon.svg.length);//设置内容长度  
-    resp.write(icon.svg, "utf-8", function (err) {
-        resp.end()
+
+    let index = 0;
+    while (index < icon.svg.length) {
+        resp.write(icon.svg.substring(index, index + 2048), "utf-8");
+        index += 2048;
+    }
+
+    resp.end(function _(a, b) {
+        console.log(a, b)
     })
 
 });

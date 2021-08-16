@@ -66,11 +66,22 @@ exports.addSvg = function (svg, db) {
     return promise;
 }
 
-exports.updateSvg = function (fontId, svg) {
+exports.updateSvg = function (fontId, name, svg) {
 
-    let { callback, promise } = DBPromise();
+    let chunks = [], values = [], { callback, promise } = DBPromise();
 
-    dbInstance.run(`UPDATE ${IconTableName} set svg=? where id=?`, [svg, fontId], callback);
+    if (typeof name != 'undefined') {
+        chunks.push("name=?")
+        values.push(name)
+    }
+
+    if (typeof svg != 'undefined') {
+        chunks.push("svg=?")
+        values.push(svg)
+    }
+    values.push(fontId);
+
+    dbInstance.run(`UPDATE ${IconTableName} set ${chunks.join(",")} where id=?`, values, callback);
 
     return promise;
 }

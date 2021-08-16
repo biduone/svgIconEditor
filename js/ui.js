@@ -42,6 +42,16 @@ define('buildIcons', [], function (require, exports, module) {
         BuildFromJSON(filteredIcos);
     }
 
+    module.exports.checkDupli = function _(resKey) {
+        resKey = { ...resKey };
+        for (let ico in icons) {
+            if (resKey[icons[ico].name]) {
+                resKey[icons[ico].name] = false;
+            }
+        }
+        return resKey
+    }
+
     function BuildFromJSON(res) {
         var frame = document.createDocumentFragment();
         /* 后端已排序
@@ -51,13 +61,13 @@ define('buildIcons', [], function (require, exports, module) {
 
         iconContainer.innerHTML = '';
         for (var i = 0; i < res.length; i++) {
-            frame.appendChild(iconBuilder(res[i]));
+            frame.appendChild(iconBuilder(res[i], i));
         }
         iconContainer.appendChild(frame)
     }
 
     var iconTpl = document.getElementsByClassName('icon-pt')[0];
-    function iconBuilder(res) {
+    function iconBuilder(res, icoIndex) {
         var { code, name, id } = res,
             icon = iconTpl.cloneNode(true);
 
@@ -70,6 +80,7 @@ define('buildIcons', [], function (require, exports, module) {
         var editBtns = icon.querySelectorAll('.icon-edit');
         for (let i = 0; i < editBtns.length; i++) {
             editBtns[i].setAttribute('fn', id);
+            editBtns[i].setAttribute('ico-index', icoIndex);
         }
         return icon;
     }
@@ -78,11 +89,13 @@ define('buildIcons', [], function (require, exports, module) {
     iconContainer.addEventListener('click', function (e) {
 
         var fn = e.target.getAttribute('fn'),
-            fc = e.target.getAttribute('fc');
+            fc = e.target.getAttribute('fc'),
+            index = Number(e.target.getAttribute('ico-index'));
+
         if (!fn) return;
 
         if (fc == 'edit') {
-            goEdit(fn);
+            goEdit(fn, index);
         } else if (fc == 'down') {
             goDownload(fn);
         } else if (fc == 'del') {
@@ -93,7 +106,7 @@ define('buildIcons', [], function (require, exports, module) {
 
     });
 
-    function goEdit(fn) {
+    function goEdit(fn, index) {
         $.ajax({ method: 'GET', url: `/svg/get`, data: { fn } }).then((svgInfo) => {
             var xmlString = svgInfo.svg.replace(/xmlns\=("|').+svg("|')/, ''),
                 code = svgInfo.code,
@@ -125,7 +138,13 @@ define('buildIcons', [], function (require, exports, module) {
                     viewWidth,
                     viewHeight,
                     isProject: true,
-                    show_svg: xmlString
+                    show_svg: xmlString,
+                    callback: function _cb(data) {
+                        if (data && index) {
+                            icons[index] = Object.assign(icons[index], data)
+                            BuildFromJSON(icons);
+                        }
+                    }
                 },
                 width: 910,
                 height: 685,
@@ -174,7 +193,7 @@ define('buildIcons', [], function (require, exports, module) {
     }
 });
 
-seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
+seajs.use(["assets/magix/helper", 'buildIcons', "jquery"], function (helper, buildIcons, jquery) {
 
     $.ajaxSetup({
         complete: function (xhr, a, b, c) {
@@ -292,37 +311,66 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
     var upload = $$('#uploadinput')[0],
         exts = $$('#ext-icons')[0],
         uploadOpt = $$('#upload-svg-opt')[0],
-        willUploads = [];
+        willUploads = [],
+        maxUpSize = 20;
     //上传图标
     upload.addEventListener('change', function (evt) {
 
-        let length = willUploads.length;
+        let files = this.files,
+            withExisting = 0,
+            nameKeys = {};
 
-        for (let i = length - 1; i < 20; i++) {
-            if (this.files[i]) {
-                Read(this.files[i], i);
+        for (let i = 0; i < files.length; i++) {
+            var file = files[i];
+            if (file) {
+                nameKeys[(file.name || "").replace(/\.svg/i, '')] = true;
             }
         }
-        uploadOpt.style.display = "flex";
 
-        function Read(file, index) {
-            var FR = new FileReader();
-            FR.onload = evt => {
-                try {
-                    var svgDom = new DOMParser().parseFromString(evt.target.result, 'application/xml');
-                    if (svgDom.firstElementChild.tagName.toUpperCase() !== 'SVG') {
-                        throw 'ç'
+        var checkedKeys = buildIcons.checkDupli(nameKeys);
+
+        Read(0);
+
+        function Read(index) {
+
+            if (willUploads.length >= maxUpSize || files.length <= index) {
+                return;
+            }
+
+            var file = files[index],
+                FN = ((file || {}).name || "").replace(/\.svg/i, '');
+
+            if (checkedKeys[FN] && file) {
+
+                var FR = new FileReader();
+
+                FR.onload = evt => {
+
+                    try {
+                        var svgDom = new DOMParser().parseFromString(evt.target.result, 'application/xml');
+                        if (svgDom.firstElementChild.tagName.toUpperCase() !== 'SVG') {
+                            throw 'ç'
+                        }
+
+                        exts.innerHTML += "<div class='upload-svg icon-edit'>" + evt.target.result + "</div>";
+                        willUploads[index] = { index, name: FN, svg: evt.target.result };
+                        //有要上传的图标时展开界面
+                        uploadOpt.style.display = "flex";
+
+                    } catch (e) {
+                        alert(`${file.name}不是标准的svg文件`);
                     }
-                } catch (e) {
-                    return alert("不是标准的svg文件");
+
+                    Read(index + 1);
                 }
-
-                exts.innerHTML += "<div class='upload-svg icon-edit'>" + evt.target.result + "</div>";
-                willUploads[index] = { name: file.name.replace(/\.svg/i, ''), svg: evt.target.result };
-
+                FR.readAsText(file, 'utf-8');
+            } else {
+                Read(index + 1);
+                !withExisting && helper.showGlobalTip({ content: '添加了与现有名称重复的图标，将不加入上传！', delay: 2500 });
+                withExisting = true;
             }
-            FR.readAsText(file, 'utf-8');
         }
+
     });
 
     $$('#upload-cancel')[0].addEventListener('click', function () {
@@ -336,7 +384,7 @@ seajs.use(['buildIcons', "jquery"], function (buildIcons, jquery) {
         $.ajax({
             url: '/svg/upload',
             method: 'post',
-            data: { icons: willUploads, pid: pid }
+            data: { icons: willUploads.filter(function _u(ico) { return !!(ico || {}).svg }), pid: pid }
         }).then(function (res) {
             if (res.succ) {
                 location.reload();
