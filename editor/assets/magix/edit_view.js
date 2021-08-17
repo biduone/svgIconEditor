@@ -213,7 +213,7 @@ define("assets/magix/edit_view", ["magix", "assets/magix/helper", "jquery", "ass
                     fn: data.id,
                     pid: data.pid,
                     name: iconname == data.name ? undefined : iconname,
-                    svgFile: svgDomStr
+                    svgFile: svgDomStr.replace("<svg ", "<svg xmlns=\"http://www.w3.org/2000/svg\" ")
                 },
                 complete: function (xhr) {
                     var res = JSON.parse(xhr.responseText);
