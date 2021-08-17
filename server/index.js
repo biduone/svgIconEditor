@@ -1,4 +1,5 @@
 
+var fs = require("fs");
 var Express = require('express');
 var { urlencoded } = require('body-parser');
 var cookieParser = require('cookie-parser')
@@ -222,17 +223,12 @@ http.get(decideUrl("/svg/download"), async function (req, resp) {
 
     resp.setHeader("content-type", "application/octet-stream");
     resp.setHeader("Content-Disposition", "attachment;filename=" + encodeURIComponent(`${icon.code}$${icon.name}.svg`));
-    resp.setHeader("Content-Length", icon.svg.length);//设置内容长度  
-
-    let index = 0;
-    while (index < icon.svg.length) {
-        resp.write(icon.svg.substring(index, index + 2048), "utf-8");
-        index += 2048;
-    }
-
-    resp.end(function _(a, b) {
-        console.log(a, b)
-    })
+    //resp.setHeader("Content-Length", icon.svg.length);//设置内容长度  
+    resp.write(icon.svg, "utf-8", function _cb() {
+        resp.end(function _(a, b) {
+            console.log(a, b)
+        })
+    });
 
 });
 

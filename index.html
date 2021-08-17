@@ -56,7 +56,8 @@
             <div id="upload-svg-opt">
                 <div class="opt-icons" id="ext-icons"></div>
                 <div class="upload-opt-btns">
-                    <button id="upload-btn" class="btn-flat">上传</button><button id="upload-cancel" class="btn-flat">取消</button>
+                    <button id="upload-btn" class="btn-flat">上传</button><button id="upload-cancel"
+                        class="btn-flat">取消</button>
                 </div>
             </div>
         </div>
@@ -111,15 +112,17 @@
                 },
                 exts: ["assets/magix/exts"]
             });
-            //加载项目列表
-            $.ajax({
-                url: '/svg/proj'
-            }).then(function (res) {
-                document.querySelector('#projects').innerHTML = res.map(function (item) {
-                    return `<option value="${item.id}:${encodeURIComponent(item.fontname)}">${item.name}</option>`;
-                }).join('');
-            }, function () { })
-            buildIcons.loadAndBuild(localStorage.getItem("currentPid"));//
+
+            $.ajaxSetup({
+                complete: function (xhr, a, b, c) {
+
+                    if (xhr.status == 401) {
+                        logins.innerHTML = '<input name="verifycode" placeholder="登录码"/><button>登录</button>';
+                    } else if (xhr.status == 200) {
+                        logins.innerHTML = "🥳";
+                    }
+                }
+            });
         });
 
     </script>

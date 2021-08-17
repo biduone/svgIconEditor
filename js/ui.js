@@ -193,18 +193,19 @@ define('buildIcons', [], function (require, exports, module) {
     }
 });
 
-seajs.use(["assets/magix/helper", 'buildIcons', "jquery"], function (helper, buildIcons, jquery) {
+seajs.use(["assets/magix/helper", 'buildIcons'], function (helper, buildIcons) {
 
-    $.ajaxSetup({
-        complete: function (xhr, a, b, c) {
-
-            if (xhr.status == 401) {
-                logins.innerHTML = '<input name="verifycode" placeholder="登录码"/><button>登录</button>';
-            } else if (xhr.status == 200) {
-                logins.innerHTML = "🥳";
-            }
-        }
-    });
+    //加载项目列表
+    $.ajax({
+        url: '/svg/proj'
+    }).then(function (res) {
+        document.querySelector('#projects').innerHTML = res.map(function (item) {
+            return `<option value="${item.id}:${encodeURIComponent(item.fontname)}">${item.name}</option>`;
+        }).join('');
+    }, function (res, a) {
+        console.log(res, a)
+    })
+    buildIcons.loadAndBuild(localStorage.getItem("currentPid"));//
 
     $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
         options.url = "" + options.url;
