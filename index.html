@@ -99,32 +99,6 @@
             })
         });
 
-        seajs.use(['magix', 'tmpl', "buildIcons"], function (Magix, tmpl, buildIcons) {
-
-            Magix.boot({
-                defaultPath: '/index',
-                defaultView: 'app/index',
-                rootId: 'root',
-                error: (e) => {
-                    setTimeout(() => {
-                        throw e;
-                    }, 0);
-                },
-                exts: ["assets/magix/exts"]
-            });
-
-            $.ajaxSetup({
-                complete: function (xhr, a, b, c) {
-
-                    if (xhr.status == 401) {
-                        logins.innerHTML = '<input name="verifycode" placeholder="登录码"/><button>登录</button>';
-                    } else if (xhr.status == 200) {
-                        logins.innerHTML = "🥳";
-                    }
-                }
-            });
-        });
-
     </script>
 </body>
 

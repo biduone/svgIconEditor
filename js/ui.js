@@ -193,8 +193,30 @@ define('buildIcons', [], function (require, exports, module) {
     }
 });
 
-seajs.use(["assets/magix/helper", 'buildIcons'], function (helper, buildIcons) {
+seajs.use(["assets/magix/helper", 'magix', 'tmpl', 'buildIcons'], function (helper, Magix, tmpl, buildIcons) {
+    //tmpl 为“编辑”弹窗需要
+    Magix.boot({
+        defaultPath: '/index',
+        defaultView: 'app/index',
+        rootId: 'root',
+        error: (e) => {
+            setTimeout(() => {
+                throw e;
+            }, 0);
+        },
+        exts: ["assets/magix/exts"]
+    });
 
+    $.ajaxSetup({
+        complete: function (xhr, a, b, c) {
+
+            if (xhr.status == 401) {
+                logins.innerHTML = '<input name="verifycode" placeholder="登录码"/><button>登录</button>';
+            } else if (xhr.status == 200) {
+                logins.innerHTML = "🥳";
+            }
+        }
+    });
     //加载项目列表
     $.ajax({
         url: '/svg/proj'
