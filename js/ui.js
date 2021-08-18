@@ -260,6 +260,8 @@ seajs.use(["assets/magix/helper", 'magix', 'tmpl', 'buildIcons'], function (help
                 location.reload();
                 loginForm.innerHTML = "🥳";
             }
+        }, function _rej() {
+            helper.showGlobalTip("登录失败")
         })
         evt.preventDefault();
     });
@@ -422,6 +424,8 @@ seajs.use(["assets/magix/helper", 'magix', 'tmpl', 'buildIcons'], function (help
 
     $$('#upload-btn')[0].addEventListener('click', function () {
         var pid = currentProjInfo(0);
+        var _this = this;
+        _this.disabled = true;
         $.ajax({
             url: '/svg/upload',
             method: 'post',
@@ -432,6 +436,8 @@ seajs.use(["assets/magix/helper", 'magix', 'tmpl', 'buildIcons'], function (help
             }
         }, function () {
             $$('#upload-cancel')[0].click();
+            helper.showGlobalTip("上传失败");
+            _this.disabled = false;
         });
     });
 });

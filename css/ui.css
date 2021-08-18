@@ -12,6 +12,10 @@ input:focus, textarea:focus, select:focus {
     border-radius: 3px;
 }
 
+button {
+    cursor: pointer;
+}
+
 #icons {
     display: flex;
     flex-wrap: wrap;

@@ -61,7 +61,7 @@ http.post(decideUrl("/svg/login"), async function (req, resp) {
         loginSessions[cryptKey] = Date.now();
         respone(resp, respRes(true));
     } else {
-        respone(resp, respRes(false));
+        respone(resp, respRes(false), 401);
     }
 
 });
