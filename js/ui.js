@@ -278,7 +278,19 @@ seajs.use(["assets/magix/helper", 'magix', 'tmpl', 'buildIcons'], function (help
                 projInfo[this[i].name] = this[i].value;
             }
         }
-        $.ajax({ url: '/svg/addProj', method: 'post', data: projInfo })
+        $.ajax({ url: '/svg/addProj', method: 'post', data: projInfo }).then(function _(projs) {
+
+            var projSelect = document.querySelector('#projects');
+
+            projSelect.innerHTML = projs.map(function (item) {
+                return `<option value="${item.id}:${encodeURIComponent(item.fontname)}">${item.name}</option>`;
+            }).join('');
+            addProjOpt.style.display = "";
+            projSelect.selectedIndex = projs.length - 1;
+
+        },function rej(){
+            alert("添加失败啦")
+        })
         evt.preventDefault();
     });
 
