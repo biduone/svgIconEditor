@@ -274,8 +274,14 @@ seajs.use(["assets/magix/helper", 'magix', 'tmpl', 'buildIcons'], function (help
     $$('#add-proj-opt')[0].addEventListener('submit', function (evt) {
         var projInfo = {};
         for (let i = 0; i < this.length; i++) {
+            var value = this[i].value;
+
+            if (this[i].name == "fontname") {
+                value = value.replace(/\s/g, "_");
+            }
             if (this[i].name) {
-                projInfo[this[i].name] = this[i].value;
+                projInfo[this[i].name] = value;
+                this[i].value = "";
             }
         }
         $.ajax({ url: '/svg/addProj', method: 'post', data: projInfo }).then(function _(projs) {
@@ -288,7 +294,7 @@ seajs.use(["assets/magix/helper", 'magix', 'tmpl', 'buildIcons'], function (help
             addProjOpt.style.display = "";
             projSelect.selectedIndex = projs.length - 1;
 
-        },function rej(){
+        }, function rej() {
             alert("添加失败啦")
         })
         evt.preventDefault();

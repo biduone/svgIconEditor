@@ -3,7 +3,11 @@ body {
     margin: 0;
 }
 
-input:focus, select:focus {
+input, textarea, select {
+    border-color: transparent;
+}
+
+input:focus, textarea:focus, select:focus {
     box-shadow: 0 0 4px 0 var(--theme-color);
     border-radius: 3px;
 }
@@ -231,7 +235,7 @@ body>.icon-pt {
     height: 18px;
     margin: 0;
     padding: 2px 4px 3px 4px;
-    border: 1px solid #aaa;
+    border: 1px solid transparent;
     border-radius: 2px;
     margin-right: 10px;
     outline: none;
@@ -244,6 +248,10 @@ body>.icon-pt {
 
 #add-proj-opt>.btn-flat {
     margin-left: 10px;
+}
+
+#add-proj-opt> ::placeholder {
+    font-size: 10px;
 }
 
 .btn-flat {
