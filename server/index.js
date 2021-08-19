@@ -13,7 +13,7 @@ const { Config: {
     EXPIRATION,
     SERVER_PREFIX,
     VERIFY_COOKIE
-} } = require('./serverConfig');
+}, DBConf } = require('./serverConfig');
 
 
 var loginSessions = {};
@@ -85,6 +85,7 @@ http.post(decideUrl("/svg/addProj"), async function (req, resp) {
 
     resp.setHeader("content-type", "application/json; charset=UTF-8");
     respone(resp, JSON.stringify(rows));
+    backupIcoDB();
 });
 
 /** 页面上读取svg信息来显示 */
@@ -155,7 +156,7 @@ http.post(decideUrl("/svg/save"), async function (req, resp) {
     } catch (e) {
         respone(resp, respRes(false));
     }
-
+    backupIcoDB();
 });
 
 /**保存修改 */
@@ -205,6 +206,7 @@ http.post(decideUrl("/svg/upload"), async function (req, resp) {
     } catch (e) {
         respone(resp, respRes(false));
     }
+    backupIcoDB();
 });
 
 /**上传新svg文件 */
@@ -278,6 +280,21 @@ function decodeVC(code) {
     return atob(code);
 }
 
+var backupTimer = null,
+    dateDay = null;
+
+function backupIcoDB() {
+    clearTimeout(backupTimer)
+    backupTimer = setTimeout(function _() {
+        var toDay = new Date();
+        if (toDay.getHours() == 1 && dateDay != toDay.getDate()) {//每天1点备份
+            fs.copyFile(`./${DBConf.DBName}`, `./${DBConf.DBName}_${toDay.getDate()}`);
+            dateDay = toDay.getDate();
+            return;
+        }
+        backupIcoDB();
+    }, 5 * 60 * 1000);//5分钟
+}
 if (typeof btoa === 'undefined') {
     global.btoa = function (str) {
         return Buffer.from(str, 'utf-8').toString('base64');
