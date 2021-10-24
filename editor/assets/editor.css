@@ -5178,18 +5178,18 @@ button.swiper-pagination-bullet {
     color: #333
 }
 
-.edit-dialog .mp-e2e-body .svg-manage .manage-element .manage-upload {
+.edit-dialog .mp-e2e-body .svg-manage .manage-element .manage-replace {
     color: red;
     position: relative
 }
 
-.edit-dialog .mp-e2e-body .svg-manage .manage-element .manage-upload .iconfont {
+.edit-dialog .mp-e2e-body .svg-manage .manage-element .manage-replace .iconfont {
     font-size: 20px;
     vertical-align: -2px;
     margin-right: 10px
 }
 
-.edit-dialog .mp-e2e-body .svg-manage .manage-element .manage-upload .upload-btn {
+.edit-dialog .mp-e2e-body .svg-manage .manage-element .manage-replace .upload-btn {
     position: absolute;
     left: 0;
     width: 100%;

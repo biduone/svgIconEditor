@@ -8,7 +8,11 @@ define("assets/magix/edit_view", ["magix", "assets/magix/helper", "jquery", "ass
     var o = helper.HISTORY_COLOR_KEY
         , l = helper.MOST_USE_COLOR;
     module.exports = magix.View.extend({
-        tmpl: '<div class="top-title"><div class="icon-title"><span class="name">"{{*name}}"</span> icon</div><span class="divid"></span> <span class="item"><span class="title">**MANAGE_ICON_DOWNLOAD_DIALOG_AUTHOR**\uff1a</span><a href="/user/detail?uid={{creator.id}}" data-spm-click="gostr=/alimama.30;locaid=d214f71f6" vclick-ignore="true" class="link-text">{{creater.nickname}}</a> </span><span class="item"><span class="title">**MANAGE_ICON_DOWNLOAD_DIALOG_UPDATED_AT**\uff1a</span><strong>{{updated_at.split(\'T\')[0]}}</strong></span></div><div class="svg-wrap clearfix"><div class="svg-container"><div class="edit_grid" id="J_edit_grid"></div><div class="icon-container" id="J_icon_container"><span class="iconfont container-reload" title="reload" mx-click="reload()" data-spm-click="gostr=/alimama.30;locaid=d051827c9">&#xe688;</span> {{{show_svg}}}</div></div><div class="svg-manage"><div class="manage-element"><label>画布</label><div class="manage-content manage-vb"><span>宽&nbsp;&nbsp;<input class="input" name="viewWidth" value="{{viewWidth}}" mx-change="setViewBox()" /></span>&nbsp;&nbsp;&nbsp;&nbsp;<span>高&nbsp;&nbsp;<input class="input" name="viewHeight" value="{{viewHeight}}" mx-change="setViewBox()" /></span></div></div><div class="manage-element"><label>**MANAGE_ICON_EDIT_DIALOG_GRID**</label><div class="manage-content"><div mx-view="assets/magix/range" mx-options="{to:96}" mx-changevalue="onChangeSlide()"></div><span id="J_change_value" class="change-value">16</span></div></div><div class="manage-element"><label>**MANAGE_ICON_EDIT_DIALOG_TRANSLATE**</label><div class="manage-content manage-transform"><span title="top" class="iconfont" mx-click="transform(\'top\')" data-spm-click="gostr=/alimama.30;locaid=d5bc66546">&#xe663;</span> <span title="bottom" class="iconfont" mx-click="transform(\'bottom\')" data-spm-click="gostr=/alimama.30;locaid=d4b5e3901">&#xe668;</span> <span title="left" class="iconfont" mx-click="transform(\'left\')" data-spm-click="gostr=/alimama.30;locaid=dddf21788">&#xe661;</span> <span title="right" class="iconfont" mx-click="transform(\'right\')" data-spm-click="gostr=/alimama.30;locaid=d637499e4">&#xe669;</span></div></div><div class="manage-element"><label>**MANAGE_ICON_EDIT_DIALOG_ROTATE**</label><div class="manage-content manage-transform"><span title="Clockwise" mx-click="transform(\'rotateRight\')" data-spm-click="gostr=/alimama.30;locaid=d67bbd548" class="iconfont">&#xe665;</span> <span title="Counterclockwise" mx-click="transform(\'rotateLeft\')" data-spm-click="gostr=/alimama.30;locaid=dfde2d6ff" class="iconfont">&#xe65a;</span></div></div><div class="manage-element"><label>**MANAGE_ICON_EDIT_DIALOG_SCALE**</label><div class="manage-content manage-transform"><span title="enlarge" mx-click="transform(\'scaleUp\')" data-spm-click="gostr=/alimama.30;locaid=dc9fb9ee9" class="iconfont">&#xe667;</span> <span title="narrow" mx-click="transform(\'scaleDown\')" data-spm-click="gostr=/alimama.30;locaid=dcc4aa5e4" class="iconfont">&#xe65d;</span></div></div><div class="manage-element"><div class="block-color-manage"><ul class="color-block-lists clearfix mt20">{{#for(c in mostUseColors)}}<li class="color-block" style="background:#{{*c}};" mx-click="selectColor()" data-spm-click="gostr=/alimama.30;locaid=d02c5e2a5">{{*c}}</li>{{/for}}</ul></div><div class="block-color-manage"><ul class="color-block-lists clearfix histroy">{{#for(c in historyUseColors)}}<li class="color-block" style="background:#{{*c}};" mx-click="selectColor()" data-spm-click="gostr=/alimama.30;locaid=d50f08c6b">{{*c}}</li>{{/for}}</ul><div class="manage-mid-wrap"><span class="color-picker-wrap"><input class="input pick-input" value="{{selectedColor}}" type="text" mx-focusout="changeColor()" mx-keydown="changeColor()"/> <span id="J_color_pick_icon" class="color-picker-item" style="background:#{{selectedColor}}" mx-click="showPicker()" data-spm-click="gostr=/alimama.30;locaid=dba2ea334"></span></span></div></div></div></div></div>{{#if(isProject)}}<div class="content-wrap"><span class="content-item">Unicode(**MANAGE_ICON_EDIT_DIALOG_HEX**)<br><input id="J_edit_dialog_unicode" class="input" readonly type="text" value="{{unicodex}}"/> </span><span class="content-item">图标名称<br><input id="J_edit_dialog_iconname" class="input" type="text" value="{{name}}"/></span><!-- span class="content-item">Font Class / Symbol<br><input id="J_edit_dialog_fontclass" class="input" type="text" value="{{font_class}}"/></span--></div>{{/if}} {{#if(!isProject)}}<div class="content-wrap"><span class="content-item content-item-upload">Icon Name<br><input id="J_edit_dialog_name" class="input" type="text" value="{{name}}"/> </span><span class="content-item content-item-upload">Tags(**MANAGE_ICON_EDIT_DIALOG_SPLIT**)<br><input id="J_edit_dialog_slug" class="input" type="text" value="{{slug}}"/> </span><span class="content-item content-item-upload">Font Class / Symbol<br><input id="J_edit_dialog_fontclass" class="input" type="text" value="{{font_class}}"/></span></div>{{/if}}<div class="line"></div><div class="btn-wrap"><span class="btn btn-normal mr20" mx-click="update()" data-spm-click="gostr=/alimama.30;locaid=d8ac649a8">**MANAGE_ICON_EDIT_DIALOG_SAVE**</span></div>',
+        tmpl: '<div class="top-title"><div class="icon-title"><span class="name">"{{*name}}"</span> icon</div><span class="divid"></span> <span class="item"><span class="title">**MANAGE_ICON_DOWNLOAD_DIALOG_AUTHOR**\uff1a</span><a href="/user/detail?uid={{creator.id}}" data-spm-click="gostr=/alimama.30;locaid=d214f71f6" vclick-ignore="true" class="link-text">{{creater.nickname}}</a> </span><span class="item"><span class="title">**MANAGE_ICON_DOWNLOAD_DIALOG_UPDATED_AT**\uff1a</span><strong>{{updated_at.split(\'T\')[0]}}</strong></span></div><div class="svg-wrap clearfix"><div class="svg-container"><div class="edit_grid" id="J_edit_grid"></div><div class="icon-container" id="J_icon_container"><span class="iconfont container-reload" title="reload" mx-click="reload()" data-spm-click="gostr=/alimama.30;locaid=d051827c9">&#xe688;</span> {{{show_svg}}}</div></div><div class="svg-manage">' +
+            '<div class="manage-element"><label>Icon</label><div class="manage-content manage-replace"><span class="iconfont">&#xe640;</span>**MANAGE_ICON_EDIT_DIALOG_REPLACE** <input class="upload-btn" id="J_replace_svg" type="file" name="filename" mx-change="replaceIco()" /></div></div>' +
+            '<div class="manage-element"><label>画布</label><div class="manage-content manage-vb"><span>宽&nbsp;&nbsp;<input class="input" name="viewWidth" value="{{viewWidth}}" mx-change="setViewBox()" /></span>&nbsp;&nbsp;&nbsp;&nbsp;<span>高&nbsp;&nbsp;<input class="input" name="viewHeight" value="{{viewHeight}}" mx-change="setViewBox()" /></span></div></div><div class="manage-element"><label>**MANAGE_ICON_EDIT_DIALOG_GRID**</label><div class="manage-content"><div mx-view="assets/magix/range" mx-options="{to:96}" mx-changevalue="onChangeSlide()"></div><span id="J_change_value" class="change-value">16</span></div></div><div class="manage-element"><label>**MANAGE_ICON_EDIT_DIALOG_TRANSLATE**</label><div class="manage-content manage-transform"><span title="top" class="iconfont" mx-click="transform(\'top\')" data-spm-click="gostr=/alimama.30;locaid=d5bc66546">&#xe663;</span> <span title="bottom" class="iconfont" mx-click="transform(\'bottom\')" data-spm-click="gostr=/alimama.30;locaid=d4b5e3901">&#xe668;</span> <span title="left" class="iconfont" mx-click="transform(\'left\')" data-spm-click="gostr=/alimama.30;locaid=dddf21788">&#xe661;</span> <span title="right" class="iconfont" mx-click="transform(\'right\')" data-spm-click="gostr=/alimama.30;locaid=d637499e4">&#xe669;</span></div></div><div class="manage-element"><label>**MANAGE_ICON_EDIT_DIALOG_ROTATE**</label><div class="manage-content manage-transform"><span title="Clockwise" mx-click="transform(\'rotateRight\')" data-spm-click="gostr=/alimama.30;locaid=d67bbd548" class="iconfont">&#xe665;</span> <span title="Counterclockwise" mx-click="transform(\'rotateLeft\')" data-spm-click="gostr=/alimama.30;locaid=dfde2d6ff" class="iconfont">&#xe65a;</span></div></div><div class="manage-element"><label>**MANAGE_ICON_EDIT_DIALOG_SCALE**</label><div class="manage-content manage-transform"><span title="enlarge" mx-click="transform(\'scaleUp\')" data-spm-click="gostr=/alimama.30;locaid=dc9fb9ee9" class="iconfont">&#xe667;</span> <span title="narrow" mx-click="transform(\'scaleDown\')" data-spm-click="gostr=/alimama.30;locaid=dcc4aa5e4" class="iconfont">&#xe65d;</span></div></div>' +
+            '<div class="manage-element"><div class="block-color-manage"><ul class="color-block-lists clearfix mt20">{{#for(c in mostUseColors)}}<li class="color-block" style="background:#{{*c}};" mx-click="selectColor()" data-spm-click="gostr=/alimama.30;locaid=d02c5e2a5">{{*c}}</li>{{/for}}</ul></div><div class="block-color-manage"><ul class="color-block-lists clearfix histroy">{{#for(c in historyUseColors)}}<li class="color-block" style="background:#{{*c}};" mx-click="selectColor()" data-spm-click="gostr=/alimama.30;locaid=d50f08c6b">{{*c}}</li>{{/for}}</ul><div class="manage-mid-wrap"><span class="color-picker-wrap"><input class="input pick-input" value="{{selectedColor}}" type="text" mx-focusout="changeColor()" mx-keydown="changeColor()"/> <span id="J_color_pick_icon" class="color-picker-item" style="background:#{{selectedColor}}" mx-click="showPicker()" data-spm-click="gostr=/alimama.30;locaid=dba2ea334"></span></span></div></div></div>' +
+            '</div></div>{{#if(isProject)}}<div class="content-wrap"><span class="content-item">Unicode(**MANAGE_ICON_EDIT_DIALOG_HEX**)<br><input id="J_edit_dialog_unicode" class="input" readonly type="text" value="{{unicodex}}"/> </span><span class="content-item">图标名称<br><input id="J_edit_dialog_iconname" class="input" type="text" value="{{name}}"/></span><!-- span class="content-item">Font Class / Symbol<br><input id="J_edit_dialog_fontclass" class="input" type="text" value="{{font_class}}"/></span--></div>{{/if}} {{#if(!isProject)}}<div class="content-wrap"><span class="content-item content-item-upload">Icon Name<br><input id="J_edit_dialog_name" class="input" type="text" value="{{name}}"/> </span><span class="content-item content-item-upload">Tags(**MANAGE_ICON_EDIT_DIALOG_SPLIT**)<br><input id="J_edit_dialog_slug" class="input" type="text" value="{{slug}}"/> </span><span class="content-item content-item-upload">Font Class / Symbol<br><input id="J_edit_dialog_fontclass" class="input" type="text" value="{{font_class}}"/></span></div>{{/if}}<div class="line"></div><div class="btn-wrap"><span class="btn btn-normal mr20" mx-click="update()" data-spm-click="gostr=/alimama.30;locaid=d8ac649a8">**MANAGE_ICON_EDIT_DIALOG_SAVE**</span></div>',
         ctor: function (a) {
             this.opts = a
         },
@@ -234,7 +238,58 @@ define("assets/magix/edit_view", ["magix", "assets/magix/helper", "jquery", "ass
                 }
             })
         },
+        "replaceIco<change>": function (evt) {
 
+            var file = evt.currentTarget.files[0],
+                svgStr,
+                xmlns = /xmlns=("|')http:\/\/www.w3.org\/2000\/svg("|')/ig,
+                data = this.data,
+                FR = new FileReader();
+
+            FR.onload = evt => {
+
+                try {
+                    var svgDom = new DOMParser().parseFromString(evt.target.result, 'application/xml');
+                    if (svgDom.firstElementChild.tagName.toUpperCase() !== 'SVG') {
+                        throw 'ç'
+                    }
+                    svgStr = evt.target.result;
+
+                } catch (e) {
+                    alert(`${file.name}不是标准的svg文件`);
+                }
+
+                jQ.ajax({
+                    url: '/svg/save',
+                    method: 'post',
+                    data: {
+                        fn: data.id,
+                        pid: data.pid,
+                        name: data.name,
+                        svgFile: svgStr.replace(xmlns, "").replace("<svg ", "<svg xmlns=\"http://www.w3.org/2000/svg\" ")
+                    },
+                    complete: function (xhr) {
+                        var res = JSON.parse(xhr.responseText);
+                        if (res.succ) {
+                            setTimeout(function () {
+                                renewFontIcon(data.fontname);
+                            }, 500)
+                            helper.hideDialog();
+                            data.callback && data.callback({
+                                name: iconname,
+                                id: data.id,
+                                pid: data.pid,
+                            })
+                        } else {
+                            helper.showGlobalTip('替换失败');
+                        }
+                    }
+                });
+            }
+            FR.readAsText(file, 'utf-8');
+
+
+        },
         "setViewBox<change>": function (evt) {
             var prevData = this.data,
                 svgDom = jQ("#J_icon_container svg")[0],
