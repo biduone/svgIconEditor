@@ -41,14 +41,14 @@ exports.querySingleIcon = async function (fontId, db) {
 exports.queryIconsInfo = function (projectId, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).all(`select id, code, name from ${IconTableName} where projectId=?`, [projectId || 1], callback);
+    (db || dbInstance).all(`select id, code, name from ${IconTableName} where projectId=? and del is null`, [projectId || 1], callback);
     return promise;
 }
 
 exports.queryAllSvgInfo = function (projectId, db) {
 
     let { callback, promise } = DBPromise();
-    (db || dbInstance).all(`select id, code, name, svg from ${IconTableName} where projectId=?`, [projectId], callback);
+    (db || dbInstance).all(`select id, code, name, svg from ${IconTableName} where projectId=? and del is null`, [projectId], callback);
     return promise;
 }
 /** 添加svg
@@ -86,11 +86,11 @@ exports.updateSvg = function (fontId, name, svg) {
     return promise;
 }
 
-exports.delSvg = function (fontId) {
+exports.delSvg = function (fontId, operatorName) {
 
     let { callback, promise } = DBPromise();
 
-    dbInstance.run(`delete from ${IconTableName} where id=?`, [fontId], callback);
+    dbInstance.run(`UPDATE ${IconTableName} set del=? where id=?`, [`${operatorName}-${Date.now()}`, fontId], callback);
 
     return promise;
 }
@@ -107,7 +107,8 @@ exports.initIconTable = function (db) {
         name varchar(255),
         code varchar(512),
         svg TEXT,
-        updatetime Integer
+        updatetime Integer,
+        del varchar(512)
     )`, callback);
     return promise;
 
@@ -123,7 +124,7 @@ exports.initProjectTable = function (db) {
     (db || dbInstance).run(`CREATE TABLE IF NOT EXISTS ${ProjTableName} (
         id Integer primary key autoincrement, 
         name varchar(255),
-        fontname varchar(255),
+        fontname varchar(255) UNIQUE,
         desc varchar(512),
         updatetime Integer
     )`, async (a, b) => {

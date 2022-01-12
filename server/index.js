@@ -28,15 +28,15 @@ http.use(function (req, resp, next) {
     const { cookies } = req,
         verifyCode = cookies[VERIFY_COOKIE] || '';
 
-    if (accouts[verifyCode]) {
+    if (accouts[verifyCode] && loginSessions[verifyCode]) {
         //清除登录过期的
-        if (loginSessions[verifyCode] && (Date.now() - loginSessions[verifyCode]) > EXPIRATION * 100) {
+        if ((Date.now() - loginSessions[verifyCode].tm) > EXPIRATION * 100) {
             resp.clearCookie(VERIFY_COOKIE);
             respone(resp, '', 401);
             return;
         }
         //更新登录时间
-        loginSessions[verifyCode] = Date.now();
+        loginSessions[verifyCode].tm = Date.now();
         next();
     } else if (decideUrl("/svg/login") === req.url || decideUrl("/svg/iconsWithContent") === req.url) {
         //跳过登录请求
@@ -58,7 +58,7 @@ http.post(decideUrl("/svg/login"), async function (req, resp) {
     if (body.verifycode && successful) {
         resp.cookie(VERIFY_COOKIE, cryptKey);
         //更新登录时间
-        loginSessions[cryptKey] = Date.now();
+        loginSessions[cryptKey] = { tm: Date.now(), name: body.verifycode };
         respone(resp, respRes(true));
     } else {
         respone(resp, respRes(false), 401);
@@ -165,7 +165,7 @@ http.post(decideUrl("/svg/remove"), async function (req, resp) {
     if (!fontId) {
         return respone(resp, respRes(false));
     }
-    const res = await sqliteDB.delSvg(fontId);
+    const res = await sqliteDB.delSvg(fontId, loginSessions[GetVerifyCookie(req)].name);
     RespToJson(resp);
     return respone(resp, respRes(!res.err));
 });
@@ -204,6 +204,7 @@ http.post(decideUrl("/svg/upload"), async function (req, resp) {
         })
         respone(resp, respRes(true));
     } catch (e) {
+        console.log(e.message, e.stack);
         respone(resp, respRes(false));
     }
     backupIcoDB();
@@ -305,4 +306,9 @@ if (typeof atob === 'undefined') {
     global.atob = function (b64Encoded) {
         return Buffer.from(b64Encoded, 'base64').toString();
     };
+}
+
+function GetVerifyCookie(req) {
+    const { cookies } = req;
+    return cookies[VERIFY_COOKIE] || '';
 }

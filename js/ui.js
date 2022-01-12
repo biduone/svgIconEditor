@@ -221,9 +221,7 @@ seajs.use(["assets/magix/helper", 'magix', 'tmpl', 'buildIcons'], function (help
     $.ajax({
         url: '/svg/proj'
     }).then(function (res) {
-        document.querySelector('#projects').innerHTML = res.map(function (item) {
-            return `<option value="${item.id}:${encodeURIComponent(item.fontname)}">${item.name}</option>`;
-        }).join('');
+        updateSelects(res)
     }, function (res, a) {
         console.log(res, a)
     })
@@ -275,24 +273,30 @@ seajs.use(["assets/magix/helper", 'magix', 'tmpl', 'buildIcons'], function (help
 
     $$('#add-proj-opt')[0].addEventListener('submit', function (evt) {
         var projInfo = {};
+
+        var fontname = (this.fontname.value || "").replace(/\s/g, "_");
+        if (!checkFontnameOnly(fontname)) {//检查重复
+            evt.preventDefault();
+            return false;
+        }
+
         for (let i = 0; i < this.length; i++) {
             var value = this[i].value;
 
             if (this[i].name == "fontname") {
-                value = value.replace(/\s/g, "_");
+                value = fontname;
             }
             if (this[i].name) {
                 projInfo[this[i].name] = value;
                 this[i].value = "";
             }
         }
+
         $.ajax({ url: '/svg/addProj', method: 'post', data: projInfo }).then(function _(projs) {
 
             var projSelect = document.querySelector('#projects');
 
-            projSelect.innerHTML = projs.map(function (item) {
-                return `<option value="${item.id}:${encodeURIComponent(item.fontname)}">${item.name}</option>`;
-            }).join('');
+            updateSelects(projs);
             addProjOpt.style.display = "";
             projSelect.selectedIndex = projs.length - 1;
 
@@ -462,4 +466,33 @@ function renewFontIcon(name) {
 
 function currentProjInfo(index) {
     return document.querySelector('#projects').value.split(":")[index];
+}
+
+function updateSelects(projs) {
+
+    var projSelect = document.querySelector('#projects'),
+        currentPid = localStorage.getItem("currentPid") || 1,
+        selectOption;
+
+    projSelect.innerHTML = projs.map(function (item) {
+        if (currentPid == item.id) {
+            selectOption = `${item.id}:${encodeURIComponent(item.fontname)}`;
+            renewFontIcon(item.fontname);
+        }
+        return `<option value="${item.id}:${encodeURIComponent(item.fontname)}">${item.name}(${item.fontname})</option>`;
+    }).join('');
+    projSelect.value = selectOption;
+}
+
+function checkFontnameOnly(fontName = "") {
+    var projSelect = document.querySelector('#projects'),
+        opts = projSelect.options;
+
+    for (let i = 0; i < opts.length; i++) {
+        if (opts[i].innerHTML.indexOf(`(${fontName})`) > -1) {
+            alert(`字体名与代码项目的重复`);
+            return false;
+        }
+    }
+    return true;
 }
